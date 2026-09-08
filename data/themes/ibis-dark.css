@@ -262,3 +262,11 @@ button
 {
   border: 1px solid @grey_95;
 }
+
+/* the filmstrip keeps its frames bare, as Lightroom's does */
+#thumbtable-filmstrip #thumb-name,
+#thumbtable-filmstrip #thumb-ext
+{
+  color: transparent;
+  background-color: transparent;
+}

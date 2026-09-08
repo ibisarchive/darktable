@@ -226,18 +226,18 @@ button
    the selected frame. sizes are percent of the cell (darktable's rule). */
 #thumb-name
 {
-  color: @grey_70;
+  color: @grey_85;
   background-color: transparent;
 }
 #thumb-ext
 {
-  color: @grey_05;
-  background-color: @grey_60;
+  color: @grey_00;
+  background-color: @grey_70;
   border-radius: 2px;
   padding: 0 0.35em;
   font-weight: bold;
 }
-#thumb-main:hover #thumb-ext { color: @grey_95; }
+#thumb-main:hover #thumb-ext { color: @grey_00; }
 #thumb-star,
 #thumb-reject,
 #thumb-colorlabels
@@ -252,27 +252,35 @@ button
 }
 .dt_overlays_always #thumb-star:active
 {
-  color: @grey_65;
-  background-color: @grey_65;
+  color: @grey_80;
+  background-color: @grey_80;
 }
 .dt_overlays_always #thumb-main:hover #thumb-star,
 .dt_overlays_always #thumb-main:hover #thumb-reject
 {
-  color: @grey_40;
+  color: @grey_60;
 }
 .dt_overlays_always #thumb-main:hover #thumb-star:active
 {
-  color: @grey_85;
-  background-color: @grey_85;
+  color: @grey_90;
+  background-color: @grey_90;
 }
 /* the edited mark sits at rest like Lightroom's, dim */
 #thumb-altered
 {
   opacity: 1;
-  color: @grey_45;
+  color: @grey_60;
 }
 /* selected frame: light hairline around the image */
 #thumb-main:selected #thumb-image
 {
-  border: 1px solid @grey_95;
+  border: 1px solid @grey_90;   /* ink outline on the light table */
+}
+
+/* the filmstrip keeps its frames bare, as Lightroom's does */
+#thumbtable-filmstrip #thumb-name,
+#thumbtable-filmstrip #thumb-ext
+{
+  color: transparent;
+  background-color: transparent;
 }
