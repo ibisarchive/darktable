@@ -335,10 +335,27 @@ static int32_t _job_run(dt_job_t *job)
     }
     else
     {
-      if(!unknown_tag) dt_tag_new(TAG_UNKNOWN, &unknown_tag);
-      if(unknown_tag) dt_tag_attach(unknown_tag, imgid, FALSE, FALSE);
-      dt_print(DT_DEBUG_AI, "[ibis_identify] image %d: unsure, best %s (%.3f)",
-               imgid, best < n_labels ? labels[best] : "?", score);
+      // unsure: a species someone (or an earlier run) already put on the
+      // frame outranks a weak guess, so it stays and nothing is added.
+      // only a frame with no species at all gets the Unidentified marker
+      gboolean has_species = FALSE;
+      GList *old = NULL;
+      dt_tag_get_attached(imgid, &old, TRUE);
+      for(GList *t = old; t && !has_species; t = g_list_next(t))
+      {
+        const dt_tag_t *tag = t->data;
+        has_species = tag->tag && g_str_has_prefix(tag->tag, TAG_ROOT)
+                      && strcmp(tag->tag, TAG_UNKNOWN) != 0;
+      }
+      dt_tag_free_result(&old);
+      if(!has_species)
+      {
+        if(!unknown_tag) dt_tag_new(TAG_UNKNOWN, &unknown_tag);
+        if(unknown_tag) dt_tag_attach(unknown_tag, imgid, FALSE, FALSE);
+      }
+      dt_print(DT_DEBUG_AI, "[ibis_identify] image %d: unsure, best %s (%.3f)%s",
+               imgid, best < n_labels ? labels[best] : "?", score,
+               has_species ? ", kept existing species" : "");
       j->unsure++;
     }
     count++;

@@ -4,9 +4,9 @@
   Adds an export storage, "eBird checklist (Ibis Archive)". Select the frames
   from one outing, export with this storage, and you get:
 
-    <folder>/checklist.csv          19 columns, header row, for you to read
-    <folder>/checklist_upload.csv   the same rows, no header, for eBird's importer
-    <folder>/by_species/<name>/     the exported JPEGs, one folder per species
+    <folder>/<date>_<place>/checklist.csv         19 columns, header row, for you to read
+    <folder>/<date>_<place>/checklist_upload.csv  the same rows, no header, for eBird's importer
+    <folder>/<date>_<place>/<species>/            the exported JPEGs, one folder per species
 
   Everything the checklist needs is darktable's own data:
     species   tags  Birds|Species|<name>  (Kestrel's sidecars) or species|<name>
@@ -78,10 +78,16 @@ end
 
 local function species_of(image)
   local names = tag_names(image)
-  local v = tag_value(names, { "Birds|Species", "species", "Species" })
-  if v then
-    -- Nested deeper (Birds|Species|Anatidae|Common Merganser): the last segment is the name.
-    return (v:match("([^|]+)$"))
+  for _, n in ipairs(names) do
+    for _, root in ipairs({ "Birds|Species", "species", "Species" }) do
+      local v = n:match("^" .. root:gsub("|", "%%|") .. "|(.+)$")
+      if v then
+        -- Nested deeper (Birds|Species|Anatidae|Common Merganser): the last segment is the name.
+        local leaf = v:match("([^|]+)$")
+        -- Unidentified is the identify module's "not sure" marker, not a species
+        if leaf and leaf ~= "Unidentified" then return leaf end
+      end
+    end
   end
   return nil
 end
@@ -107,6 +113,26 @@ local function copy(src, dst)
   end
 end
 
+-- Where the checklist and JPEGs go. darktable hands a Lua storage temporary
+-- files, so the storage needs its own folder setting; it is remembered.
+local PREF_DIR = "output_dir"
+local default_dir = dt.preferences.read("ibis_ebird", PREF_DIR, "string")
+if default_dir == nil or default_dir == "" then
+  default_dir = (os.getenv("USERPROFILE") or os.getenv("HOME") or "."):gsub("\\", "/") .. "/Pictures/Ibis Archive/eBird"
+end
+mkdir(default_dir)
+local folder_chooser = dt.new_widget("file_chooser_button"){
+  title = "eBird output folder",
+  is_directory = true,
+  value = default_dir,
+  changed_callback = function(w) dt.preferences.write("ibis_ebird", PREF_DIR, "string", w.value) end,
+}
+local storage_widget = dt.new_widget("box"){
+  orientation = "vertical",
+  dt.new_widget("label"){ label = "checklist and JPEGs go to a dated folder under:", halign = "start" },
+  folder_chooser,
+}
+
 -- One export run = one outing. Rows accumulate here; finalize writes them.
 local run = { images = {}, files = {} }
 
@@ -119,8 +145,10 @@ local function finalize(storage, image_table, extra)
   if #run.images == 0 then return end
   local first_img = run.images[1]
 
-  -- Where the output goes: the folder darktable exported into, beside the JPEGs.
-  local out_dir = run.files[first_img]:match("^(.*)[/\\][^/\\]+$") or "."
+  -- Where the output goes: <chosen folder>/<date>_<place>, made below once
+  -- the date and place are known. darktable wrote the JPEGs to a temporary
+  -- location; the per-species copy is what keeps them.
+  local base_dir = ((folder_chooser.value ~= nil and folder_chooser.value ~= "") and folder_chooser.value or default_dir):gsub("[/\\]+$", "")
 
   -- Frames, sorted by time; the outing's when.
   local frames = {}
@@ -155,7 +183,20 @@ local function finalize(storage, image_table, extra)
   for _, f in ipairs(frames) do
     for _, n in ipairs(tag_names(f.img)) do all_names[#all_names + 1] = n end
   end
-  local place = tag_value(all_names, { "place" }) or first_img.path:match("([^/\\]+)$") or "outing"
+  local place = tag_value(all_names, { "place" })
+  if not place then
+    -- the folder's name, skipping generic ones (selects, crops, DCIM, 100MSDCF...)
+    local path = first_img.path:gsub("[/\\]+$", "")
+    while path ~= "" do
+      local leaf = path:match("([^/\\]+)$") or ""
+      local l = leaf:lower()
+      local generic = l == "" or l == "selects" or l == "crops" or l == "rejects" or l == "jpg"
+        or l == "raw" or l == "export" or l == "dcim" or l:match("^%d%d%d%w+$") or l:match("^%d%d%d%d%-%d%d%-%d%d$")
+      if not generic then place = leaf; break end
+      path = path:match("^(.*)[/\\][^/\\]+$") or ""
+    end
+    place = place or "outing"
+  end
   local region = tag_value(all_names, { "region" }) or ""
   local country = tag_value(all_names, { "country" }) or ""
   local protocol = tag_value(all_names, { "protocol" }) or "Incidental"
@@ -182,6 +223,11 @@ local function finalize(storage, image_table, extra)
   if date == "" then problems[#problems + 1] = "no capture time on the frames" end
   if #order == 0 then problems[#problems + 1] = "no species tags (Birds|Species|<name>) on the frames" end
 
+  local when_dir = first_when and first_when.day or "undated"
+  local out_dir = base_dir .. "/" .. when_dir .. "_" .. safe_dirname(place)
+  mkdir(base_dir)
+  mkdir(out_dir)
+
   local rows = {}
   for _, sp in ipairs(order) do
     rows[#rows + 1] = {
@@ -201,13 +247,23 @@ local function finalize(storage, image_table, extra)
   write_csv(out_dir .. "/checklist_upload.csv", false)
 
   -- One folder per species, the JPEGs darktable just exported, for eBird's
-  -- "Add media" screen. Ten per species is eBird's cap; the rest stay in out_dir.
+  -- "Add media" screen. Every frame is kept; eBird takes ten per species,
+  -- so the first ten are what to upload.
   for _, sp in ipairs(order) do
-    local dir = out_dir .. "/by_species/" .. safe_dirname(sp)
+    local dir = out_dir .. "/" .. safe_dirname(sp)
     mkdir(dir)
-    for i, f in ipairs(species[sp].files) do
-      if i <= 10 then copy(f, dir .. "/" .. (f:match("([^/\\]+)$"))) end
+    for _, f in ipairs(species[sp].files) do
+      copy(f, dir .. "/" .. (f:match("([^/\\]+)$")))
     end
+  end
+  -- frames without a species tag still belong to the outing
+  local loose = {}
+  for _, f in ipairs(frames) do
+    if not species_of(f.img) then loose[#loose + 1] = run.files[f.img] end
+  end
+  if #loose > 0 then
+    mkdir(out_dir .. "/Unidentified")
+    for _, f in ipairs(loose) do copy(f, out_dir .. "/Unidentified/" .. (f:match("([^/\\]+)$"))) end
   end
 
   local msg = string.format("eBird checklist: %d species, %d frames -> %s", #order, #frames, out_dir)
@@ -223,6 +279,6 @@ local function supported(storage, format)
   return format.extension == "jpg" or format.extension == "jpeg"
 end
 
-dt.register_storage("ibis_ebird", "eBird checklist (Ibis Archive)", store, finalize, supported, nil, nil)
+dt.register_storage("ibis_ebird", "eBird checklist (Ibis Archive)", store, finalize, supported, nil, storage_widget)
 
 dt.print_log("[ibis] eBird checklist storage registered")
