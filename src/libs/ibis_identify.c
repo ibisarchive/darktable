@@ -138,6 +138,8 @@ typedef struct dt_lib_ibis_identify_t
   // review: the hovered (else acted-on) frame's species and runners-up
   GtkWidget *review_title;
   GtkWidget *candidate[N_CANDIDATES];
+  GtkWidget *candidate_name[N_CANDIDATES];  // species, left
+  GtkWidget *candidate_pct[N_CANDIDATES];   // percentage, right
   GtkWidget *no_bird;
   dt_imgid_t review_imgid;
 } dt_lib_ibis_identify_t;
@@ -1264,11 +1266,13 @@ static void _review_update(dt_lib_module_t *self)
   {
     if(!cand[k]) continue;
     any = TRUE;
-    char *label = pct[k] < 1
-      ? g_strdup_printf("%s  <1%%%s", cand[k], species && !strcmp(species, cand[k]) ? "  \xe2\x9c\x93" : "")
-      : g_strdup_printf("%s  %d%%%s", cand[k], pct[k], species && !strcmp(species, cand[k]) ? "  \xe2\x9c\x93" : "");
-    gtk_button_set_label(GTK_BUTTON(d->candidate[k]), label);
-    g_free(label);
+    const gboolean current = species && !strcmp(species, cand[k]);
+    char *name = g_strdup_printf("%s%s", current ? "\xe2\x9c\x93  " : "", cand[k]);
+    char *pcts = pct[k] < 1 ? g_strdup("<1%") : g_strdup_printf("%d%%", pct[k]);
+    gtk_label_set_text(GTK_LABEL(d->candidate_name[k]), name);
+    gtk_label_set_text(GTK_LABEL(d->candidate_pct[k]), pcts);
+    g_free(name);
+    g_free(pcts);
     g_object_set_data_full(G_OBJECT(d->candidate[k]), "ibis-species", g_strdup(cand[k]), g_free);
     gtk_widget_show(d->candidate[k]);
   }
@@ -1331,14 +1335,19 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), d->review_title, FALSE, FALSE, DT_PIXEL_APPLY_DPI(6));
   for(int k = 0; k < N_CANDIDATES; k++)
   {
-    d->candidate[k] = gtk_button_new_with_label("");
     // species left, percentage right, like a ledger line
-    GtkWidget *inner = gtk_bin_get_child(GTK_BIN(d->candidate[k]));
-    if(GTK_IS_LABEL(inner))
-    {
-      gtk_label_set_xalign(GTK_LABEL(inner), 0.0f);
-      gtk_label_set_ellipsize(GTK_LABEL(inner), PANGO_ELLIPSIZE_END);
-    }
+    d->candidate[k] = gtk_button_new();
+    GtkWidget *row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(8));
+    d->candidate_name[k] = gtk_label_new("");
+    gtk_label_set_xalign(GTK_LABEL(d->candidate_name[k]), 0.0f);
+    gtk_label_set_ellipsize(GTK_LABEL(d->candidate_name[k]), PANGO_ELLIPSIZE_END);
+    gtk_widget_set_hexpand(d->candidate_name[k], TRUE);
+    d->candidate_pct[k] = gtk_label_new("");
+    gtk_label_set_xalign(GTK_LABEL(d->candidate_pct[k]), 1.0f);
+    gtk_box_pack_start(GTK_BOX(row), d->candidate_name[k], TRUE, TRUE, 0);
+    gtk_box_pack_end(GTK_BOX(row), d->candidate_pct[k], FALSE, FALSE, 0);
+    gtk_container_add(GTK_CONTAINER(d->candidate[k]), row);
+    gtk_widget_show_all(row);
     gtk_widget_set_tooltip_text(d->candidate[k], _("make this the frame's species"));
     g_signal_connect(d->candidate[k], "clicked", G_CALLBACK(_candidate_clicked), self);
     gtk_box_pack_start(GTK_BOX(self->widget), d->candidate[k], FALSE, FALSE, 0);
