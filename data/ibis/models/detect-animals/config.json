@@ -1,0 +1,10 @@
+{
+  "id": "detect-animals",
+  "name": "animal detector (MegaDetector v1000 cedar)",
+  "description": "MegaDetector v1000 cedar (YOLOv9 gelan-c). Input 'images' float32 1x3x640x640, RGB, 0..1, letterboxed. Output 'predictions' 1x7x8400: cx,cy,w,h then class scores animal, person, vehicle.",
+  "task": "detect",
+  "backend": "onnx",
+  "version": "1.0",
+  "num_inputs": 1,
+  "arch": "yolov9-gelan-c"
+}
