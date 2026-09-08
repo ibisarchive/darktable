@@ -3,8 +3,9 @@
 
   darktable shows every module to every photographer. A birder's session is
   import, cull, identify, review, place, export, so the panels are set up
-  to read that way: the modules of that flow visible and in reach, the rest
-  hidden (one click away in the module visibility menu, nothing removed).
+  to read that way (IBIS-HIERARCHY.md): the modules of that flow visible
+  and in reach, the rest collapsed or hidden (one click away in the module
+  visibility menu, nothing removed).
 
   Applied once per configuration (a preference remembers the version), so a
   user who turns a module back on keeps it. Bump WORKSPACE_VERSION when the
@@ -16,7 +17,7 @@
 
 local dt = require "darktable"
 
-local WORKSPACE_VERSION = 1
+local WORKSPACE_VERSION = 2
 local PREF = "workspace_version"
 
 local LAYOUT = {
@@ -31,16 +32,33 @@ local LAYOUT = {
       -- hidden: not part of an outing
       styles = false, copy_history = false, image = false,
       neural_restore = false, recentcollect = false,
+      -- bottom panel keeps the toolbar only
+      timeline = false, script_manager = false,
     },
-    expanded = { ibis_identify = true, tagging = false, geotagging = false, export = false, metadata = false },
+    -- B open, C collapsed (solo mode keeps one open per side)
+    expanded = {
+      ibis_identify = true,
+      select = false, metadata = false, tagging = false, geotagging = false, export = false,
+      import = false, collect = false, filtering = false, metadata_view = false,
+    },
   },
   darkroom = {
-    visible = { neural_restore = false },
-    expanded = {},
+    -- left: navigation, history, snapshots; the rest belongs to the lighttable
+    visible = {
+      history = true, snapshots = true,
+      neural_restore = false, duplicate = false, colorpicker = false, tagging = false,
+      metadata_view = false, masks = false, export = false,
+      filter = false, script_manager = false,
+    },
+    expanded = { history = false, snapshots = false },
   },
   map = {
-    visible = { map_locations = false },
-    expanded = {},
+    visible = {
+      location = true, geotagging = true, map_settings = true, collect = true,
+      map_locations = false, tagging = false, filtering = false, metadata_view = false,
+      filter = false, script_manager = false,
+    },
+    expanded = { location = true, geotagging = false, map_settings = false, collect = false },
   },
 }
 
