@@ -71,6 +71,7 @@ typedef struct dt_map_t
   gboolean entering;
   OsmGpsMap *map;
   OsmGpsMapSource_t map_source;
+  char *custom_tiles; // Ibis Archive tile URI in use, or NULL for a built-in source
   OsmGpsMapLayer *osd;
   GSList *images;
   dt_geo_position_t *points;
@@ -752,6 +753,19 @@ void init(dt_view_t *self)
 
     lib->map_source = map_source;
 
+    // Ibis Archive: a custom tile provider replaces the built-in source.
+    // repo-uri is construct-only in osm-gps-map, so the provider is read
+    // here and a change in map settings applies at the next start
+    lib->custom_tiles = dt_map_custom_tile_uri();
+    if(lib->custom_tiles)
+    {
+      lib->map = g_object_new(OSM_TYPE_GPS_MAP, "map-source",
+                              OSM_GPS_MAP_SOURCE_NULL, "repo-uri",
+                              lib->custom_tiles, "image-format", "png",
+                              "proxy-uri", g_getenv("http_proxy"), NULL);
+      lib->map_source = OSM_GPS_MAP_SOURCE_NULL;
+    }
+    else
     lib->map = g_object_new(OSM_TYPE_GPS_MAP, "map-source",
                             OSM_GPS_MAP_SOURCE_NULL, "proxy-uri",
                             g_getenv("http_proxy"), NULL);
@@ -2355,8 +2369,9 @@ void enter(dt_view_t *self)
   lib->loc.drag = FALSE;
   lib->entering = TRUE;
 
-  /* set the correct map source */
-  _view_map_set_map_source_g_object(self, lib->map_source);
+  /* set the correct map source (a custom tile provider was set at construction) */
+  if(!lib->custom_tiles)
+    _view_map_set_map_source_g_object(self, lib->map_source);
 
   /* add map to center widget */
   gtk_overlay_add_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
@@ -2574,12 +2589,60 @@ static void _view_map_set_map_source(const dt_view_t *view,
 {
   dt_map_t *lib = view->data;
 
+  if(map_source == DT_MAP_TILES_MAPBOX)
+  {
+    // the Ibis tile provider: remembered, applied at the next start
+    dt_conf_set_string("plugins/map/tile_provider", "mapbox");
+    dt_control_log(_("map tiles change at the next start of Ibis Archive"));
+    return;
+  }
+  if(lib->custom_tiles)
+  {
+    // back to a built-in source: forget the provider, apply at next start
+    dt_conf_set_string("plugins/map/tile_provider", "");
+    dt_conf_set_string("plugins/map/map_source",
+                       osm_gps_map_source_get_friendly_name(map_source));
+    dt_control_log(_("map tiles change at the next start of Ibis Archive"));
+    return;
+  }
+
   if(map_source == lib->map_source) return;
 
   lib->map_source = map_source;
   dt_conf_set_string("plugins/map/map_source",
                      osm_gps_map_source_get_friendly_name(map_source));
   _view_map_set_map_source_g_object(view, map_source);
+}
+
+// Ibis Archive: the tile URI for the configured provider, or NULL for a
+// built-in source. osm-gps-map wants #Z/#X/#Y placeholders. Mapbox is the
+// one custom provider (CARTO's free basemaps now watermark tiles without
+// a key); it needs the user's own token and follows the theme: dark
+// tiles under a dark theme, light under light. no token: built-in source
+char *dt_map_custom_tile_uri(void)
+{
+  char *provider = dt_conf_get_string("plugins/map/tile_provider");
+  char *uri = NULL;
+  if(!g_strcmp0(provider, "mapbox"))
+  {
+    char *token = dt_conf_get_string("plugins/map/mapbox_token");
+    if(token && token[0])
+    {
+      char *theme = dt_conf_get_string("ui_last/theme");
+      const gboolean light = theme && strstr(theme, "light");
+      g_free(theme);
+      char *style = dt_conf_get_string(light ? "plugins/map/mapbox_style_light"
+                                             : "plugins/map/mapbox_style_dark");
+      uri = g_strdup_printf("https://api.mapbox.com/styles/v1/mapbox/%s/tiles/256/#Z/#X/#Y?access_token=%s",
+                            style && style[0] ? style : (light ? "light-v11" : "dark-v11"), token);
+      g_free(style);
+    }
+    else
+      dt_print(DT_DEBUG_ALWAYS, "[map] Mapbox tiles asked for but no token set; using the built-in source");
+    g_free(token);
+  }
+  g_free(provider);
+  return uri;
 }
 
 static OsmGpsMapImage *_view_map_add_pin(const dt_view_t *view,

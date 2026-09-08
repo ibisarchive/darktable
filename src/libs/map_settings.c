@@ -27,6 +27,7 @@
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+#include "views/view.h"
 #include "gui/preferences.h"
 #include <gdk/gdkkeysyms.h>
 
@@ -73,6 +74,11 @@ static void _parameter_changed(GtkToggleButton *button, gpointer data)
   }
 }
 
+static void _mapbox_token_changed(GtkEntry *entry, gpointer data)
+{
+  dt_conf_set_string("plugins/map/mapbox_token", gtk_entry_get_text(entry));
+}
+
 static void _map_source_changed(GtkWidget *widget, gpointer data)
 {
   dt_view_map_set_map_source(darktable.view_manager,
@@ -90,7 +96,14 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->map_source_dropdown, _("select the source of the map. some entries might not work"));
 
   const char *map_source = dt_conf_get_string_const("plugins/map/map_source");
+  const char *provider = dt_conf_get_string_const("plugins/map/tile_provider");
   int selection = OSM_GPS_MAP_SOURCE_OPENSTREETMAP - 1, entry = 0;
+  // Ibis Archive provider first: Mapbox, following the theme
+  dt_bauhaus_combobox_add_full(d->map_source_dropdown, _("Mapbox (your token, follows the theme)"),
+                               DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
+                               GINT_TO_POINTER(DT_MAP_TILES_MAPBOX), NULL, TRUE);
+  if(!g_strcmp0(provider, "mapbox")) selection = entry;
+  entry++;
   for(int i = 1; i < OSM_GPS_MAP_SOURCE_LAST; i++)
   {
     if(osm_gps_map_source_is_valid(i))
@@ -99,13 +112,27 @@ void gui_init(dt_lib_module_t *self)
       dt_bauhaus_combobox_add_full(d->map_source_dropdown, name,
                                    DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT,
                                    GINT_TO_POINTER(i), NULL, TRUE);
-      if(!g_strcmp0(name, map_source)) selection = entry;
+      if((!provider || !provider[0]) && !g_strcmp0(name, map_source)) selection = entry;
       entry++;
     }
   }
   dt_bauhaus_combobox_set(d->map_source_dropdown, selection);
+  gtk_widget_set_tooltip_text(d->map_source_dropdown,
+    _("select the source of the map. Mapbox uses the token below and matches the theme;\n"
+      "a change of provider applies at the next start"));
   g_signal_connect(G_OBJECT(d->map_source_dropdown), "value-changed", G_CALLBACK(_map_source_changed), NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->map_source_dropdown), FALSE, TRUE, 0);
+
+  // Mapbox token: yours, never shipped; stored in the configuration only
+  GtkWidget *token = gtk_entry_new();
+  gtk_entry_set_visibility(GTK_ENTRY(token), FALSE);
+  gtk_entry_set_placeholder_text(GTK_ENTRY(token), _("Mapbox access token (pk...)"));
+  char *tok = dt_conf_get_string("plugins/map/mapbox_token");
+  gtk_entry_set_text(GTK_ENTRY(token), tok ? tok : "");
+  g_free(tok);
+  gtk_widget_set_tooltip_text(token, _("a Mapbox public token from account.mapbox.com; applies at the next start"));
+  g_signal_connect(token, "changed", G_CALLBACK(_mapbox_token_changed), NULL);
+  gtk_box_pack_start(GTK_BOX(self->widget), token, FALSE, TRUE, 0);
 
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));

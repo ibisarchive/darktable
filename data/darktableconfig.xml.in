@@ -4058,6 +4058,34 @@
     <longdescription>path to a text file with one eBird species name per line; only those species are candidates. empty means every species the model knows</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/map/tile_provider</name>
+    <type>string</type>
+    <default></default>
+    <shortdescription>map tile provider</shortdescription>
+    <longdescription>empty for one of the built-in sources; mapbox for Mapbox tiles with your token, following the theme</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/map/mapbox_token</name>
+    <type>string</type>
+    <default></default>
+    <shortdescription>Mapbox access token</shortdescription>
+    <longdescription>your Mapbox public token; used only when the tile provider is mapbox</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/map/mapbox_style_dark</name>
+    <type>string</type>
+    <default>dark-v11</default>
+    <shortdescription>Mapbox style under dark themes</shortdescription>
+    <longdescription>a Mapbox style id, e.g. dark-v11, outdoors-v12, satellite-streets-v12</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/map/mapbox_style_light</name>
+    <type>string</type>
+    <default>light-v11</default>
+    <shortdescription>Mapbox style under light themes</shortdescription>
+    <longdescription>a Mapbox style id, e.g. light-v11, outdoors-v12</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/lighttable/ibis_identify/ebird_api_key</name>
     <type>string</type>
     <default></default>

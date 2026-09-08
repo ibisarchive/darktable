@@ -18,6 +18,11 @@
 
 #pragma once
 
+// Ibis Archive tile providers, numbered past osm-gps-map's own sources so the
+// map settings dropdown can offer them beside the built-in ones
+#define DT_MAP_TILES_MAPBOX 201
+char *dt_map_custom_tile_uri(void);
+
 #include "common/act_on.h"
 #include "common/action.h"
 #include "common/history.h"
