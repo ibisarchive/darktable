@@ -4051,6 +4051,13 @@
     <longdescription>the id of the animal detector model directory under the AI models folder; the best animal box is what the classifier sees. empty, or missing, means the whole frame is classified</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/lighttable/ibis_identify/region_list</name>
+    <type>string</type>
+    <default></default>
+    <shortdescription>identify birds: region species list</shortdescription>
+    <longdescription>path to a text file with one eBird species name per line; only those species are candidates. empty means every species the model knows</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/lighttable/neural_restore/mark_output</name>
     <type>bool</type>
     <default>true</default>

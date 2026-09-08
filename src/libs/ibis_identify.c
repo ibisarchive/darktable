@@ -29,9 +29,17 @@
 // backend (src/ai) loads and runs it, so CPU/DirectML/CUDA follow the
 // user's provider preference like every other model.
 //
-// input contract of the bundled classifier (Kestrel species head v1):
-//   'data' float32 NCHW 1x3x300x300, RGB, 0..255, not normalised
-//   'model_output' float32 1xN softmax probabilities
+// two kinds of classifier are understood, told apart by "arch" in the
+// model's config.json:
+//   - a fixed head (Kestrel species head v1, arch kestrel-species-v1):
+//     'data' float32 NCHW 1x3x300x300, RGB, 0..255, not normalised;
+//     'model_output' 1xN softmax probabilities, row i = labels.txt line i
+//   - an embedding model (BioCLIP 2, arch bioclip): CLIP-normalised
+//     1x3x224x224 in, a 1xD embedding out. text_embeds.bin beside the
+//     model holds one L2-normalised D-vector per labels.txt line (every
+//     eBird species); cosine similarity times the model's logit scale,
+//     softmaxed, is the probability. the label set is data, so the same
+//     code serves any taxonomy. tools/ibis/export_bioclip.py builds it
 //
 // a bird is small in most frames, and the classifier was trained on
 // crops, so a detector runs first when its model is present (model id
@@ -69,6 +77,7 @@ DT_MODULE(1)
 #define CONF_MIN_SCORE   "plugins/lighttable/ibis_identify/min_score"
 #define CONF_MODEL_ID    "plugins/lighttable/ibis_identify/model_id"
 #define CONF_DETECTOR_ID "plugins/lighttable/ibis_identify/detector_id"
+#define CONF_REGION_LIST "plugins/lighttable/ibis_identify/region_list"
 
 #define TAG_ROOT      "Birds|Species|"
 #define TAG_UNKNOWN   "Birds|Species|Unidentified"
@@ -76,6 +85,10 @@ DT_MODULE(1)
 #define MAX_LABELS    4096
 
 #define DET_SIDE      640
+#define CLIP_SIDE     224
+// OpenCLIP normalisation, as in open_clip_config.json of imageomics/bioclip-2
+static const float CLIP_MEAN[3] = { 0.48145466f, 0.4578275f, 0.40821073f };
+static const float CLIP_STD[3]  = { 0.26862954f, 0.26130258f, 0.27577711f };
 #define DET_MIN_CONF  0.25f   // MegaDetector's usual threshold
 #define DET_PAD       0.15f   // margin around the box before squaring
 #define DET_CLASS_ANIMAL 0
@@ -142,16 +155,66 @@ int position(const dt_lib_module_t *self)
 
 // --- labels ---------------------------------------------------------------
 
+// a file beside the model, in whichever models folder the backend uses
+static char *_model_file(const char *model_id, const char *name)
+{
+  char *dir = dt_ai_resolve_models_path_override();
+  char *path = dir
+    ? g_build_filename(dir, model_id, name, NULL)
+    : g_build_filename(g_get_user_data_dir(), "darktable", "models", model_id, name, NULL);
+  g_free(dir);
+  return path;
+}
+
+// the region list (conf plugins/lighttable/ibis_identify/region_list): a
+// text file with one species common name per line, as eBird spells it.
+// returns a mask over the labels, or NULL when there is no list
+static guint8 *_load_region_mask(char **labels, const int n_labels)
+{
+  char *path = dt_conf_get_string(CONF_REGION_LIST);
+  if(!path || !path[0])
+  {
+    g_free(path);
+    return NULL;
+  }
+  gchar *text = NULL;
+  if(!g_file_get_contents(path, &text, NULL, NULL))
+  {
+    dt_print(DT_DEBUG_ALWAYS, "[ibis_identify] region list %s not readable; using every species", path);
+    g_free(path);
+    return NULL;
+  }
+  GHashTable *names = g_hash_table_new(g_str_hash, g_str_equal);
+  char **lines = g_strsplit(text, "\n", -1);
+  for(int i = 0; lines[i]; i++)
+  {
+    g_strstrip(lines[i]);
+    if(lines[i][0] && lines[i][0] != '#') g_hash_table_add(names, lines[i]);
+  }
+  guint8 *mask = g_malloc0(n_labels);
+  int hits = 0;
+  for(int i = 0; i < n_labels; i++)
+    if(g_hash_table_contains(names, labels[i])) { mask[i] = 1; hits++; }
+  dt_print(DT_DEBUG_AI, "[ibis_identify] region list %s: %d of %d species", path, hits, n_labels);
+  g_hash_table_destroy(names);
+  g_strfreev(lines);
+  g_free(text);
+  g_free(path);
+  if(hits == 0)
+  {
+    // a list that matches nothing would silence the classifier
+    g_free(mask);
+    return NULL;
+  }
+  return mask;
+}
+
 // labels.txt: one common name per line, UTF-8, optional BOM; the line
 // index is the output column
 static char **_load_labels(const char *model_id, int *count)
 {
   *count = 0;
-  char *dir = dt_ai_resolve_models_path_override();
-  char *path = dir
-    ? g_build_filename(dir, model_id, "labels.txt", NULL)
-    : g_build_filename(g_get_user_data_dir(), "darktable", "models", model_id, "labels.txt", NULL);
-  g_free(dir);
+  char *path = _model_file(model_id, "labels.txt");
 
   gchar *text = NULL;
   if(!g_file_get_contents(path, &text, NULL, NULL))
@@ -307,24 +370,27 @@ static dt_ibis_rect_t _crop_rect(const int w, const int h, const dt_ibis_box_t *
 // resize a square region of the RGBA thumbnail into the classifier's
 // float CHW tensor, RGB, 0..255
 static void _prepare_input(const uint8_t *rgba, const int w, const int h,
-                           const dt_ibis_rect_t rect, float *out)
+                           const dt_ibis_rect_t rect, const int in_side,
+                           const gboolean clip_norm, float *out)
 {
   const int side = rect.side;
   const int ox = rect.x;
   const int oy = rect.y;
-  const float scale = (float)side / (float)INPUT_SIDE;
-  const int plane = INPUT_SIDE * INPUT_SIDE;
+  const float scale = (float)side / (float)in_side;
+  const int plane = in_side * in_side;
 
-  for(int y = 0; y < INPUT_SIDE; y++)
+  for(int y = 0; y < in_side; y++)
   {
     const float sy = oy + (y + 0.5f) * scale - 0.5f;
-    for(int x = 0; x < INPUT_SIDE; x++)
+    for(int x = 0; x < in_side; x++)
     {
       const float sx = ox + (x + 0.5f) * scale - 0.5f;
       float rgb[3];
       _sample(rgba, w, h, sx, sy, rgb);
       for(int c = 0; c < 3; c++)
-        out[c * plane + y * INPUT_SIDE + x] = rgb[c];
+        out[c * plane + y * in_side + x] = clip_norm
+          ? (rgb[c] / 255.0f - CLIP_MEAN[c]) / CLIP_STD[c]
+          : rgb[c];
     }
   }
 }
@@ -336,8 +402,16 @@ typedef struct dt_ibis_models_t
   dt_ai_context_t *det;      // NULL when no detector model is present
   float *clf_in, *clf_out;
   float *det_in, *det_out;
-  int n_out;                 // classifier outputs
+  int n_out;                 // classifier outputs (probabilities, or embedding dim)
   int det_ch, det_anchors;   // detector output layout
+  // embedding models (arch bioclip)
+  gboolean embedding;
+  int clf_side;              // input side: 300 for the fixed head, 224 for CLIP
+  float *text_embeds;        // n_labels x n_out, L2-normalised rows
+  float *probs;              // n_labels, filled per frame
+  float logit_scale;
+  int n_labels;
+  const guint8 *allowed;     // n_labels mask from the region list, or NULL
 } dt_ibis_models_t;
 
 // returns the winning label index, or -1; *score gets its probability,
@@ -362,20 +436,57 @@ static int _classify(dt_ibis_models_t *m, const dt_imgid_t imgid, float *score, 
                     m->det_ch, m->det_anchors, &box);
   if(found) *det_conf = box.conf;
   const dt_ibis_rect_t rect = _crop_rect(buf.width, buf.height, found ? &box : NULL);
-  _prepare_input(buf.buf, buf.width, buf.height, rect, m->clf_in);
+  _prepare_input(buf.buf, buf.width, buf.height, rect, m->clf_side, m->embedding, m->clf_in);
   dt_mipmap_cache_release(&buf);
 
-  int64_t in_shape[4] = { 1, 3, INPUT_SIDE, INPUT_SIDE };
+  int64_t in_shape[4] = { 1, 3, m->clf_side, m->clf_side };
   int64_t out_shape[2] = { 1, m->n_out };
   dt_ai_tensor_t in = { .data = m->clf_in, .type = DT_AI_FLOAT, .shape = in_shape, .ndim = 4 };
   dt_ai_tensor_t out = { .data = m->clf_out, .type = DT_AI_FLOAT, .shape = out_shape, .ndim = 2 };
   if(dt_ai_run(m->clf, &in, 1, &out, 1) != 0)
     return -1;
 
+  float *probs = m->clf_out;
+  int n = m->n_out;
+  if(m->embedding)
+  {
+    // cosine similarity against every species, scaled and softmaxed;
+    // species outside the region mask are left out of the softmax so
+    // the probability is "among the birds that occur here"
+    const int d = m->n_out;
+    float norm = 0.0f;
+    for(int k = 0; k < d; k++) norm += m->clf_out[k] * m->clf_out[k];
+    norm = sqrtf(MAX(norm, 1e-12f));
+    float maxl = -1e30f;
+    for(int i = 0; i < m->n_labels; i++)
+    {
+      if(m->allowed && !m->allowed[i]) { m->probs[i] = -1e30f; continue; }
+      const float *t = m->text_embeds + (size_t)i * d;
+      float dot = 0.0f;
+      for(int k = 0; k < d; k++) dot += m->clf_out[k] * t[k];
+      m->probs[i] = m->logit_scale * dot / norm;
+      maxl = MAX(maxl, m->probs[i]);
+    }
+    float sum = 0.0f;
+    for(int i = 0; i < m->n_labels; i++)
+    {
+      m->probs[i] = (m->probs[i] <= -1e29f) ? 0.0f : expf(m->probs[i] - maxl);
+      sum += m->probs[i];
+    }
+    for(int i = 0; i < m->n_labels; i++) m->probs[i] /= MAX(sum, 1e-12f);
+    probs = m->probs;
+    n = m->n_labels;
+  }
+  else if(m->allowed)
+  {
+    for(int i = 0; i < n; i++)
+      if(!m->allowed[i]) probs[i] = 0.0f;
+  }
+
   int best = 0;
-  for(int i = 1; i < m->n_out; i++)
-    if(m->clf_out[i] > m->clf_out[best]) best = i;
-  *score = m->clf_out[best];
+  for(int i = 1; i < n; i++)
+    if(probs[i] > probs[best]) best = i;
+  *score = probs[best];
   return best;
 }
 
@@ -450,17 +561,51 @@ static int32_t _job_run(dt_job_t *job)
     goto done;
   }
 
-  dt_ibis_models_t m = { .clf = ctx };
+  dt_ibis_models_t m = { .clf = ctx, .clf_side = INPUT_SIDE, .n_labels = n_labels };
   int64_t out_shape[8] = { 0 };
   const int out_ndim = dt_ai_get_output_shape(ctx, 0, out_shape, 8);
   m.n_out = out_ndim > 0 ? (int)out_shape[out_ndim - 1] : n_labels;
   if(m.n_out <= 0) m.n_out = n_labels;
-  if(m.n_out != n_labels)
+
+  const dt_ai_model_info_t *info = dt_ai_get_model_info_by_id(env, j->model_id);
+  if(info && info->arch && !strcmp(info->arch, "bioclip"))
+  {
+    m.embedding = TRUE;
+    m.clf_side = dt_ai_model_attribute_int(info, "input_size", CLIP_SIDE);
+    m.logit_scale = (float)dt_ai_model_attribute_double(info, "logit_scale", 100.0);
+    const int dim = dt_ai_model_attribute_int(info, "embed_dim", m.n_out);
+    if(dim != m.n_out)
+      dt_print(DT_DEBUG_ALWAYS, "[ibis_identify] embedding dim %d in manifest, %d from model", dim, m.n_out);
+    char *file = dt_ai_model_attribute_string(info, "embeddings");
+    gsize len = 0;
+    gchar *raw = NULL;
+    char *path = _model_file(j->model_id, file && file[0] ? file : "text_embeds.bin");
+    if(!g_file_get_contents(path, &raw, &len, NULL) || len != (gsize)n_labels * m.n_out * sizeof(float))
+    {
+      j->error = g_strdup_printf(_("model '%s': text embeddings missing or not %d x %d floats"),
+                                 j->model_id, n_labels, m.n_out);
+      g_free(raw); g_free(path); g_free(file);
+      g_strfreev(labels);
+      dt_ai_unload_model(ctx);
+      dt_ai_env_destroy(env);
+      goto done;
+    }
+    m.text_embeds = dt_alloc_align_float((size_t)n_labels * m.n_out);
+    memcpy(m.text_embeds, raw, len);
+    m.probs = dt_alloc_align_float((size_t)n_labels);
+    g_free(raw); g_free(path); g_free(file);
+  }
+  else if(m.n_out != n_labels)
     dt_print(DT_DEBUG_ALWAYS,
              "[ibis_identify] model has %d outputs but labels.txt has %d lines",
              m.n_out, n_labels);
-  m.clf_in = dt_alloc_align_float((size_t)3 * INPUT_SIDE * INPUT_SIDE);
+  m.clf_in = dt_alloc_align_float((size_t)3 * m.clf_side * m.clf_side);
   m.clf_out = dt_alloc_align_float((size_t)m.n_out);
+
+  // the region list: species names that occur where the frames were
+  // taken, one per line. anything else is not a candidate
+  guint8 *allowed = _load_region_mask(labels, n_labels);
+  m.allowed = allowed;
 
   // the detector is optional: without it the frame's center is classified
   if(j->detector_id && j->detector_id[0] && dt_ai_get_model_info_by_id(env, j->detector_id))
@@ -553,6 +698,9 @@ static int32_t _job_run(dt_job_t *job)
   dt_free_align(m.clf_out);
   dt_free_align(m.det_in);
   dt_free_align(m.det_out);
+  dt_free_align(m.text_embeds);
+  dt_free_align(m.probs);
+  g_free(allowed);
   if(m.det) dt_ai_unload_model(m.det);
   g_strfreev(labels);
   dt_ai_unload_model(ctx);
