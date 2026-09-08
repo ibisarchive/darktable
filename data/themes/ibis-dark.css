@@ -18,72 +18,91 @@
 
 /* Ibis Archive, dark.
 
-   built on darktable.css: the base defines every colour as a token and
-   styles widgets from the tokens, so this file only sets tokens and a
-   few shapes. two-tone like the Ibis mark: near-black panels, warm-white
-   type, hairline borders, small radii. */
+   built on darktable.css: the base defines every color as a token and
+   styles widgets from the tokens, so this file sets tokens and a few
+   shapes. the surfaces follow the tonal order of Lightroom's dark UI,
+   measured from screenshots (IBIS-HIERARCHY.md): the canvas is the
+   darkest surface (#1c1c1c), panels and toolbars one step lighter
+   (#2d2d2d), inset sections between the two (#242424), hairlines #3f3f3f.
+   nothing behind a photo is brighter than the photo. */
 
 @import url("darktable.css");
 
-/* neutral ramp, one notch darker at the bottom than stock so panels read
-   as ink rather than graphite */
+/* neutral ramp; darktable.css names a few of these directly */
 @define-color grey_00 #000000;
-@define-color grey_05 #0b0b0b;
-@define-color grey_10 #141414;
-@define-color grey_15 #1c1c1c;
-@define-color grey_20 #242424;
-@define-color grey_25 #2d2d2d;
-@define-color grey_30 #383838;
-@define-color grey_35 #444444;
-@define-color grey_40 #525252;
-@define-color grey_45 #616161;
+@define-color grey_05 #0f0f0f;
+@define-color grey_10 #1c1c1c;
+@define-color grey_15 #242424;
+@define-color grey_20 #2d2d2d;
+@define-color grey_25 #363636;
+@define-color grey_30 #3f3f3f;
+@define-color grey_35 #4a4a4a;
+@define-color grey_40 #555555;
+@define-color grey_45 #666666;
 @define-color grey_50 #777777;
-@define-color grey_55 #868686;
-@define-color grey_60 #959595;
+@define-color grey_55 #888888;
+@define-color grey_60 #999999;
 @define-color grey_65 #a4a4a4;
-@define-color grey_70 #b3b3b3;
-@define-color grey_75 #c4c4c4;
-@define-color grey_80 #d2d2d2;
-@define-color grey_85 #dedede;
-@define-color grey_90 #e9e9e9;
+@define-color grey_70 #bbbbbb;
+@define-color grey_75 #c8c8c8;
+@define-color grey_80 #d6d6d6;
+@define-color grey_85 #e6e6e6;
+@define-color grey_90 #eeeeee;
 @define-color grey_95 #f4f4f4;
 @define-color grey_100 #ffffff;
 
-@define-color bg_color @grey_10;
-@define-color plugin_bg_color @grey_15;
-@define-color collapsible_bg_color @grey_20;
-@define-color border_color @grey_25;
-@define-color fg_color @grey_85;
-@define-color plugin_label_color @grey_70;
-@define-color section_label @grey_75;
+/* three attention levels (IBIS-HIERARCHY.md): A the picture and its
+   state, B this view's flow, C everything else */
+@define-color fg_a @grey_95;
+@define-color fg_b @grey_70;
+@define-color fg_c @grey_50;
 
-@define-color button_bg @grey_20;
-@define-color button_fg @grey_80;
+/* surfaces */
+@define-color bg_color @grey_20;               /* panels, toolbars, rail */
+@define-color plugin_bg_color @grey_20;        /* modules sit flat on the panel */
+@define-color collapsible_bg_color @grey_15;   /* inset sections */
+@define-color border_color @grey_30;           /* hairlines */
+@define-color fg_color @fg_a;
+@define-color plugin_label_color @fg_b;
+@define-color section_label @grey_65;
+
+/* buttons: a step lighter than the panel; hover lighter again, never inverted */
+@define-color button_bg @grey_30;
+@define-color button_fg @grey_85;
 @define-color button_border @grey_30;
-@define-color button_hover_bg @grey_85;
-@define-color button_hover_fg @grey_10;
+@define-color button_hover_bg @grey_40;
+@define-color button_hover_fg @grey_95;
 
-@define-color field_bg @grey_05;
-@define-color field_active_bg @grey_20;
-@define-color field_selected_bg @grey_35;
-@define-color field_hover_bg @grey_40;
+/* fields sink into the panel */
+@define-color field_bg @grey_10;
+@define-color field_active_bg @grey_15;
+@define-color field_selected_bg @grey_30;
+@define-color field_hover_bg @grey_25;
 
-@define-color bauhaus_bg @grey_10;
+/* sliders and comboboxes: thin grey track, light fill, value at the right */
+@define-color bauhaus_bg @grey_20;
 @define-color bauhaus_fill @grey_65;
-@define-color bauhaus_border @grey_25;
+@define-color bauhaus_border @grey_30;
 @define-color bauhaus_bg_hover @grey_70;
 
 @define-color tooltip_bg_color @grey_05;
 @define-color tooltip_fg_color @grey_85;
 
-/* the picture surfaces stay middle grey: that is a colour-management
-   decision in darktable, not a style choice */
-@define-color lighttable_bg_color @grey_30;
-@define-color filmstrip_bg_color @grey_20;
-@define-color thumbnail_bg_color @grey_35;
-@define-color thumbnail_selected_bg_color @grey_45;
-@define-color thumbnail_hover_bg_color @grey_50;
+/* the picture surfaces: the darkest thing on screen, like Lightroom.
+   darktable's own theme keeps middle grey here for color judgment; that
+   remains one click away in preferences */
+@define-color darkroom_bg_color @grey_10;
+@define-color darkroom_preview_bg_color @grey_10;
+@define-color lighttable_bg_color @grey_10;
+@define-color lighttable_preview_bg_color @grey_10;
+@define-color filmstrip_bg_color @grey_15;
+@define-color thumbnail_bg_color @grey_10;             /* cell = table: no band around the frame */
+@define-color thumbnail_selected_bg_color @grey_25;
+@define-color thumbnail_hover_bg_color @grey_30;
 @define-color thumbnail_hover_fg_color @grey_95;
+@define-color thumbnail_font_color @grey_65;
+@define-color thumbnail_star_bg_color @grey_25;        /* unset stars barely there */
+@define-color thumbnail_star_hover_color @grey_85;
 
 /* hide selection frame in culling, as the elegant themes do */
 @define-color culling_selected_border_color transparent;
@@ -101,26 +120,32 @@ frame > border
   border-width: 1px;
 }
 
+/* module headers: a title on a hairline, no strip */
+#module-header
+{
+  background-color: transparent;
+  border-bottom: 1px solid @border_color;
+  padding: 0.5em;
+}
+
 #iop-panel-label,
 #lib-panel-label,
 .dt_module_frame_header
 {
-  border-radius: 3px;
+  border-radius: 0;
 }
 
-/* density: a little more air in module headers and between rows, the
-   calm that Lightroom's panels get from spacing rather than from chrome */
 #iop-panel-label,
 #lib-panel-label
 {
-  padding-top: 5px;
-  padding-bottom: 5px;
+  padding-top: 6px;
+  padding-bottom: 6px;
 }
 
 .dt_plugin_ui
 {
   padding-top: 4px;
-  padding-bottom: 6px;
+  padding-bottom: 8px;
 }
 
 .dt_bauhaus,
@@ -132,3 +157,33 @@ button
 }
 
 @import url("chunk-ibis-fonts.css");
+
+/* ---- level C: dim at rest, full on hover ------------------------------ */
+
+/* preset and reset icons on every module header */
+#module-header .dt_module_btn { opacity: 0.35; }
+#module-header:hover .dt_module_btn,
+#module-header .dt_module_btn:hover { opacity: 1; }
+
+/* global icons (top right) and the view toolbar (bottom) */
+#header-toolbar .dt_module_btn,
+#footer-toolbar .dt_module_btn { opacity: 0.45; }
+#header-toolbar .dt_module_btn:hover,
+#footer-toolbar .dt_module_btn:hover { opacity: 1; }
+
+/* color circles in the filter bar */
+#filter-colors-box { opacity: 0.5; }
+#filter-colors-box:hover { opacity: 1; }
+
+/* cell chrome (format badge, group, altered) only on hover; stars stay */
+/* the badges are cairo-painted with the CSS color, so hide them by color, not opacity */
+#thumb-ext, #thumb-group-audio, #thumb-altered, #thumb-tags { opacity: 0; color: transparent; }
+#thumb-main:hover #thumb-ext,
+#thumb-main:hover #thumb-group-audio,
+#thumb-main:hover #thumb-tags,
+#thumb-main:hover #thumb-altered { opacity: 1; color: @thumbnail_font_color; }
+
+/* module group tabs: the active group bright, the rest dim */
+#modules-tabs .dt_module_btn { opacity: 0.5; }
+#modules-tabs .dt_module_btn:checked,
+#modules-tabs .dt_module_btn:hover { opacity: 1; }

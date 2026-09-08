@@ -57,6 +57,11 @@
 @define-color text_color @grey_90;
 @define-color plugin_label_color @grey_70;
 @define-color section_label @grey_75;
+
+/* three attention levels (IBIS-HIERARCHY.md) */
+@define-color fg_a @grey_85;
+@define-color fg_b @grey_70;
+@define-color fg_c @grey_45;
 @define-color disabled_fg_color @grey_40;
 @define-color placeholder_text_color @grey_45;
 
@@ -100,11 +105,11 @@
 @define-color lighttable_preview_bg_color #777777;
 @define-color lighttable_bg_font_color @grey_85;
 @define-color filmstrip_bg_color #9a9a9a;
-@define-color thumbnail_bg_color #a3a3a3;
+@define-color thumbnail_bg_color #8a8a8a;         /* cell = table: no band around the frame */
 @define-color thumbnail_font_color @grey_80;
 @define-color thumbnail_fg_color @grey_70;
-@define-color thumbnail_selected_bg_color #c9c9c9;
-@define-color thumbnail_hover_bg_color #dedede;
+@define-color thumbnail_selected_bg_color #a3a3a3;
+@define-color thumbnail_hover_bg_color #b5b5b5;
 @define-color thumbnail_hover_fg_color @grey_90;
 @define-color thumbnail_star_bg_color #8a8a8a;
 @define-color thumbnail_star_hover_color @grey_90;
@@ -137,11 +142,19 @@ frame > border
   border-width: 1px;
 }
 
+/* module headers: a title on a hairline, no strip */
+#module-header
+{
+  background-color: transparent;
+  border-bottom: 1px solid @border_color;
+  padding: 0.5em;
+}
+
 #iop-panel-label,
 #lib-panel-label,
 .dt_module_frame_header
 {
-  border-radius: 3px;
+  border-radius: 0;
 }
 
 /* density: a little more air in module headers and between rows, the
@@ -168,3 +181,23 @@ button
 }
 
 @import url("chunk-ibis-fonts.css");
+
+/* ---- level C: dim at rest, full on hover ------------------------------ */
+#module-header .dt_module_btn { opacity: 0.4; }
+#module-header:hover .dt_module_btn,
+#module-header .dt_module_btn:hover { opacity: 1; }
+#header-toolbar .dt_module_btn,
+#footer-toolbar .dt_module_btn { opacity: 0.5; }
+#header-toolbar .dt_module_btn:hover,
+#footer-toolbar .dt_module_btn:hover { opacity: 1; }
+#filter-colors-box { opacity: 0.55; }
+#filter-colors-box:hover { opacity: 1; }
+/* the badges are cairo-painted with the CSS color, so hide them by color, not opacity */
+#thumb-ext, #thumb-group-audio, #thumb-altered, #thumb-tags { opacity: 0; color: transparent; }
+#thumb-main:hover #thumb-ext,
+#thumb-main:hover #thumb-group-audio,
+#thumb-main:hover #thumb-tags,
+#thumb-main:hover #thumb-altered { opacity: 1; color: @thumbnail_font_color; }
+#modules-tabs .dt_module_btn { opacity: 0.55; }
+#modules-tabs .dt_module_btn:checked,
+#modules-tabs .dt_module_btn:hover { opacity: 1; }

@@ -16,10 +16,13 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* Ibis Archive sets one typeface everywhere: Times New Roman, with the
-   metric-compatible free serifs as fallbacks on systems without it. the
-   selector list mirrors chunk-fonts.css so every widget darktable styles
-   by hand is covered. */
+/* Ibis Archive type, one voice (IBIS-HIERARCHY.md, decision D5): Source
+   Sans 3 everywhere, the open cousin of the face Lightroom uses for its
+   labels; compact at 12-13 px, one weight. the wordmark pixmap is set in
+   the same face by tools/ibis/make_brand_assets.py.
+
+   the selector list mirrors chunk-fonts.css so every widget darktable
+   styles by hand is covered. */
 
 .dt_plugin_ui,
 .dt_bauhaus,
@@ -74,17 +77,16 @@ notebook tabs,
 #blending-tabs,
 #modules-tabs
 {
-  font-family: "Times New Roman",        /* Windows, macOS */
-               "Liberation Serif",       /* metric-compatible, most Linux */
-               "Tinos",                  /* ChromeOS / Android */
-               "Nimbus Roman",           /* older X11 */
-               serif;
+  font-family: "Source Sans 3",          /* bundled, OFL */
+               "Source Sans Pro",        /* older name of the same face */
+               "Segoe UI",               /* Windows fallback */
+               "Noto Sans",              /* Linux fallback */
+               sans-serif;
 }
 
-/* module headers carry the serif at slightly larger weight through size
-   rather than a bold face, which Times renders heavy on screen */
+/* module headers: same size as body, weight comes from tone not from bold */
 #iop-panel-label,
 #lib-panel-label
 {
-  font-size: 1.05em;
+  font-size: 1em;
 }

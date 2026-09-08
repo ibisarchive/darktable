@@ -2,7 +2,7 @@
 """Render the Ibis Archive brand assets into data/pixmaps.
 
 Source: the Ibis mark (white bird on a black square, Group 5.png) and the
-program name set in Times New Roman. Everything darktable shows as its own
+program name set in Source Sans 3. Everything darktable shows as its own
 logo is replaced by a data file, so the C code stays untouched:
 
     idbutton.png, idbutton-N.png      top-left panel logo (40 px) and seasonal variants
@@ -29,9 +29,8 @@ from PIL import Image, ImageDraw, ImageFont
 SIZES = [16, 22, 24, 32, 48, 64, 256]
 WORDMARK = "Ibis Archive"
 FONT_FILES = [
-    r"C:\Windows\Fonts\times.ttf",
-    "/usr/share/fonts/truetype/liberation/LiberationSerif-Regular.ttf",
-    "/Library/Fonts/Times New Roman.ttf",
+    "data/ibis/fonts/SourceSans3-Regular.ttf",                        # bundled, run from the repo root
+    "C:/Users/nedka/AppData/Local/Microsoft/Windows/Fonts/SourceSans3-Regular.ttf",
 ]
 
 # stock intrinsic sizes (px), read from the darktable files being replaced
@@ -69,7 +68,7 @@ def svg_with_png(im, width, height):
 
 
 def wordmark_png(fill, px=256):
-    """The program name in Times New Roman as a tight PNG, so the result does
+    """The program name in Source Sans 3 as a tight PNG, so the result does
     not depend on which fonts the viewer's rsvg can see."""
     font = None
     for cand in FONT_FILES:
@@ -77,7 +76,7 @@ def wordmark_png(fill, px=256):
             font = ImageFont.truetype(cand, px)
             break
     if font is None:
-        raise SystemExit("no Times New Roman / Liberation Serif font file found")
+        raise SystemExit("no Source Sans 3 font file found (data/ibis/fonts)")
     d = ImageDraw.Draw(Image.new("RGBA", (1, 1)))
     x0, y0, x1, y1 = d.textbbox((0, 0), WORDMARK, font=font)
     pad = px // 20
