@@ -101,6 +101,7 @@ typedef struct
   GtkWidget *w_main;               // GtkOverlay -- contains all others widgets
   GtkWidget *w_back;               // GtkEventBox -- thumbnail background
   GtkWidget *w_ext;                // GtkLabel -- thumbnail extension
+  GtkWidget *w_name;               // GtkLabel -- Ibis: file name without extension, top-left
 
   GtkWidget *w_image_box;
   GtkWidget *w_image;        // GtkDrawingArea -- thumbnail image

@@ -441,6 +441,11 @@ static void _thumb_write_extension(dt_thumbnail_t *thumb)
                                          thumb->is_bw_flow);
   gtk_label_set_text(GTK_LABEL(thumb->w_ext), uext);
   g_free(uext);
+
+  // Ibis: the name without its extension, as Lightroom's grid shows it
+  gchar *stem = g_strndup(thumb->filename, ext - 1 - thumb->filename);
+  gtk_label_set_text(GTK_LABEL(thumb->w_name), stem);
+  g_free(stem);
 }
 
 static gboolean _event_cursor_draw(GtkWidget *widget,
@@ -946,6 +951,7 @@ static void _thumb_update_icons(dt_thumbnail_t *thumb)
   gtk_widget_show(thumb->w_bottom_eb);
   gtk_widget_show(thumb->w_reject);
   gtk_widget_show(thumb->w_ext);
+  gtk_widget_show(thumb->w_name);
 
   // show cursor (filmstrip current-image arrow) only for the active image
   // and when in darkroom.
@@ -1004,6 +1010,7 @@ static gboolean _thumbs_hide_overlays(gpointer user_data)
   gtk_widget_hide(thumb->w_audio);
   gtk_widget_hide(thumb->w_zoom_eb);
   gtk_widget_hide(thumb->w_ext);
+  gtk_widget_hide(thumb->w_name);
   return G_SOURCE_REMOVE;
 }
 
@@ -1516,6 +1523,16 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb,
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_ext);
     gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(thumb->w_main), thumb->w_ext, TRUE);
 
+    // Ibis: file name label, top-left, same size as the extension badge
+    thumb->w_name = gtk_label_new("");
+    gtk_widget_set_name(thumb->w_name, "thumb-name");
+    gtk_widget_set_valign(thumb->w_name, GTK_ALIGN_START);
+    gtk_widget_set_halign(thumb->w_name, GTK_ALIGN_START);
+    gtk_label_set_ellipsize(GTK_LABEL(thumb->w_name), PANGO_ELLIPSIZE_END);
+    gtk_widget_show(thumb->w_name);
+    gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_name);
+    gtk_overlay_set_overlay_pass_through(GTK_OVERLAY(thumb->w_main), thumb->w_name, TRUE);
+
     // the image drawing area
     thumb->w_image_box = gtk_overlay_new();
     gtk_widget_set_name(thumb->w_image_box, "thumb-image");
@@ -1837,6 +1854,8 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     // file extension
     gtk_widget_set_margin_top(thumb->w_ext, thumb->img_margin->top);
     gtk_widget_set_margin_end(thumb->w_ext, thumb->img_margin->right);
+    gtk_widget_set_margin_top(thumb->w_name, thumb->img_margin->top);
+    gtk_widget_set_margin_start(thumb->w_name, thumb->img_margin->left);
 
     // bottom background
     gtk_widget_set_margin_start(thumb->w_bottom, thumb->img_margin->left);
@@ -1950,6 +1969,8 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     // file extension
     gtk_widget_set_margin_top(thumb->w_ext, 0.03 * width + py);
     gtk_widget_set_margin_end(thumb->w_ext, 0.03 * width + px);
+    gtk_widget_set_margin_top(thumb->w_name, 0.03 * width + py);
+    gtk_widget_set_margin_start(thumb->w_name, 0.03 * width + px);
 
     // bottom background
     attrlist = pango_attr_list_new();
@@ -2116,6 +2137,8 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb,
   _thumb_retrieve_margins(thumb);
   gtk_widget_set_margin_start(thumb->w_ext, thumb->img_margin->left);
   gtk_widget_set_margin_top(thumb->w_ext, thumb->img_margin->top);
+  gtk_widget_set_margin_start(thumb->w_name, thumb->img_margin->left);
+  gtk_widget_set_margin_top(thumb->w_name, thumb->img_margin->top);
 
   // retrieves the size of the main icons in the top panel, thumbtable
   // overlays shall not exceed that
@@ -2135,6 +2158,7 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb,
   // PangoAttribute *attr2 = pango_attr_rise_new(-fsize * PANGO_SCALE);
   // pango_attr_list_insert(attrlist, attr2);
   gtk_label_set_attributes(GTK_LABEL(thumb->w_ext), attrlist);
+  gtk_label_set_attributes(GTK_LABEL(thumb->w_name), attrlist);
   pango_attr_list_unref(attrlist);
 
   // for overlays different than block, we compute their size here, so

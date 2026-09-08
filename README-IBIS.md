@@ -30,8 +30,9 @@ Core files touched, deliberately and minimally (keep this list honest):
   follows the theme
 - `src/gui/preferences.c`, `src/libs/tools/darktable.c`: dialog title and
   about name ("darktable" -> "Ibis Archive")
-- `src/dtgtk/thumbnail.c`: the format badge sits top-right of the cell
-  (three alignment lines), as in Lightroom's grid
+- `src/dtgtk/thumbnail.c`, `thumbnail.h`: the format badge sits top-right of
+  the cell and a file-name label (`thumb-name`) top-left, as in Lightroom's
+  grid; the label mirrors the badge's size and show/hide logic
 - `src/libs/modulegroups.c`: the `workflow: birds` module-group preset
 - `src/common/ai_models.c`: one line, the label for the `classify` task
 - `cmake/modules/FindONNXRuntime.cmake`: architecture fallback for MSYS2 (upstream-worthy)

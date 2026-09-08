@@ -138,16 +138,31 @@ tooltip,
 notebook tab,
 frame > border
 {
-  border-radius: 3px;
+  border-radius: 4px;
   border-width: 1px;
 }
 
-/* module headers: a title on a hairline, no strip */
+/* module sections like Lightroom's: flat, a hairline above each header,
+   semibold title, no box around header or body */
 #module-header
 {
   background-color: transparent;
-  border-bottom: 1px solid @border_color;
+  background-image: none;
+  border: none;
+  border-top: 1px solid @border_color;
   padding: 0.5em;
+}
+.dt_plugin_ui
+{
+  background-color: @bg_color;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+#lib-panel-label,
+#iop-panel-label
+{
+  font-weight: 600;
 }
 
 #iop-panel-label,
@@ -200,11 +215,64 @@ button
 #filter-colors-box { opacity: 0.55; }
 #filter-colors-box:hover { opacity: 1; }
 /* the badges are cairo-painted with the CSS color, so hide them by color, not opacity */
-#thumb-ext, #thumb-group-audio, #thumb-altered, #thumb-tags { opacity: 0; color: transparent; }
-#thumb-main:hover #thumb-ext,
-#thumb-main:hover #thumb-group-audio,
-#thumb-main:hover #thumb-tags,
-#thumb-main:hover #thumb-altered { opacity: 1; color: @thumbnail_font_color; }
+#thumb-group-audio, #thumb-tags { opacity: 0; color: transparent; }   /* Lightroom has no tag or group badge */
 #modules-tabs .dt_module_btn { opacity: 0.55; }
 #modules-tabs .dt_module_btn:checked,
 #modules-tabs .dt_module_btn:hover { opacity: 1; }
+
+/* ---- grid cells like Lightroom's ---------------------------------------
+   name top-left, format badge top-right in a small box, stars only when
+   set, flags on hover, edited mark at rest, a one-pixel light outline on
+   the selected frame. sizes are percent of the cell (darktable's rule). */
+#thumb-name
+{
+  color: @grey_70;
+  background-color: transparent;
+}
+#thumb-ext
+{
+  color: @grey_05;
+  background-color: @grey_60;
+  border-radius: 3px;
+  padding: 0 0.4em;
+  font-weight: bold;
+}
+#thumb-main:hover #thumb-ext { color: @grey_95; }
+#thumb-star,
+#thumb-reject,
+#thumb-colorlabels
+{
+  padding: 22px;                       /* smaller glyphs: percent of the cell */
+}
+/* unset stars and the reject flag appear only on hover; set stars stay */
+.dt_overlays_always #thumb-star,
+.dt_overlays_always #thumb-reject
+{
+  color: transparent;
+}
+.dt_overlays_always #thumb-star:active
+{
+  color: @grey_65;
+  background-color: @grey_65;
+}
+.dt_overlays_always #thumb-main:hover #thumb-star,
+.dt_overlays_always #thumb-main:hover #thumb-reject
+{
+  color: @grey_40;
+}
+.dt_overlays_always #thumb-main:hover #thumb-star:active
+{
+  color: @grey_85;
+  background-color: @grey_85;
+}
+/* the edited mark sits at rest like Lightroom's, dim */
+#thumb-altered
+{
+  opacity: 1;
+  color: @grey_45;
+}
+/* selected frame: light hairline around the image */
+#thumb-main:selected #thumb-image
+{
+  border: 1px solid @grey_95;
+}
