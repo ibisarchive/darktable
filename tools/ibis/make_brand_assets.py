@@ -113,9 +113,9 @@ def main():
     for name in ["idbutton.svg", "idbutton-1.svg", "idbutton-2.svg", "idbutton-3.svg"]:
         write(os.path.join(px, name), panel_svg)
 
-    # wordmarks: the splash is dark; the panel/about mark follows the stock grey
+    # wordmarks: the splash is dark; the panel mark is a mid grey that reads on both themes
     write(os.path.join(px, "darktable.svg"), wordmark_svg("#ffffff", SPLASH_TEXT_H))
-    write(os.path.join(px, "dt_text.svg"), wordmark_svg("#c4c4c4", TEXT_H))
+    write(os.path.join(px, "dt_text.svg"), wordmark_svg("#8f8f8f", TEXT_H))
 
     # application icons
     for s in SIZES:
