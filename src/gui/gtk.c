@@ -224,8 +224,8 @@ static void _fullscreen_key_accel_callback(dt_action_t *action)
   // workaround for GTK Quartz backend bug
   gtk_window_set_title(GTK_WINDOW(widget),
                        widget == dt_ui_main_window(darktable.gui->ui)
-                       ? "darktable"
-                       : _("darktable - darkroom preview"));
+                       ? "Ibis Archive"
+                       : _("Ibis Archive - darkroom preview"));
 #endif
 }
 
@@ -1225,7 +1225,7 @@ void dt_gui_gtk_quit()
 {
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   dt_gui_add_class(win, "dt_gui_quit");
-  gtk_window_set_title(GTK_WINDOW(win), _("closing darktable..."));
+  gtk_window_set_title(GTK_WINDOW(win), _("closing Ibis Archive..."));
 
   // Write out windows dimension
   dt_gui_gtk_write_config();
@@ -2398,7 +2398,7 @@ static void _init_widgets(dt_gui_gtk_t *gui)
   gtk_window_set_type_hint(GTK_WINDOW(widget), GDK_WINDOW_TYPE_HINT_NORMAL);
 
   gtk_window_set_icon_name(GTK_WINDOW(widget), "darktable");
-  gtk_window_set_title(GTK_WINDOW(widget), "darktable");
+  gtk_window_set_title(GTK_WINDOW(widget), "Ibis Archive");
 
   g_signal_connect(G_OBJECT(widget), "delete_event",
                    G_CALLBACK(_gui_quit_callback), NULL);

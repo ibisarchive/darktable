@@ -1,0 +1,90 @@
+/*
+    This file is part of Ibis Archive, a darktable distribution.
+    Copyright (C) 2026 Ibis Archive contributors.
+
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/* Ibis Archive sets one typeface everywhere: Times New Roman, with the
+   metric-compatible free serifs as fallbacks on systems without it. the
+   selector list mirrors chunk-fonts.css so every widget darktable styles
+   by hand is covered. */
+
+.dt_plugin_ui,
+.dt_bauhaus,
+.dt_bauhaus_popup,
+combobox,
+combobox *,
+togglebutton,
+togglebutton *,
+notebook,
+notebook *,
+notebook tab,
+notebook tab *,
+table,
+table *,
+row,
+row *,
+frame,
+frame *,
+alignment,
+entry,
+entry *,
+dialog,
+dialog *,
+colorswatch,
+colorswatch *,
+stack,
+stack *,
+scrollbar,
+scrollbar *,
+eventbox,
+eventbox *,
+scale,
+scale *,
+button,
+button *,
+treeview,
+treeview *,
+menu,
+menu *,
+separator,
+box,
+box *,
+label,
+tooltip label,
+#iop-panel-label,
+#lib-panel-label,
+.dt_section_label:not(#blending-box),
+#blending-box .dt_section_label label,
+#blending-box .dt_section_label .dt_bauhaus,
+.active_menu_item *,
+notebook tabs,
+#blending-tabs,
+#modules-tabs
+{
+  font-family: "Times New Roman",        /* Windows, macOS */
+               "Liberation Serif",       /* metric-compatible, most Linux */
+               "Tinos",                  /* ChromeOS / Android */
+               "Nimbus Roman",           /* older X11 */
+               serif;
+}
+
+/* module headers carry the serif at slightly larger weight through size
+   rather than a bold face, which Times renders heavy on screen */
+#iop-panel-label,
+#lib-panel-label
+{
+  font-size: 1.05em;
+}

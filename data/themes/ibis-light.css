@@ -1,0 +1,147 @@
+/*
+    This file is part of Ibis Archive, a darktable distribution.
+    Copyright (C) 2026 Ibis Archive contributors.
+
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/* Ibis Archive, light.
+
+   darktable.css styles everything from a grey ramp and semantic tokens.
+   the ramp is mirrored here (grey_05 is now near-white, grey_95 near-
+   black) so the handful of rules that name a grey directly invert too,
+   and the semantic tokens are then set for paper-and-ink reading. the
+   middle of the ramp is unchanged: the darkroom and lighttable canvases
+   must stay middle grey for judging images. */
+
+@import url("darktable.css");
+
+@define-color grey_00 #ffffff;
+@define-color grey_05 #f7f6f3;
+@define-color grey_10 #efede9;
+@define-color grey_15 #e6e4df;
+@define-color grey_20 #dcd9d3;
+@define-color grey_25 #cfccc5;
+@define-color grey_30 #c1beb7;
+@define-color grey_35 #b1aea7;
+@define-color grey_40 #9f9c96;
+@define-color grey_45 #8c8984;
+@define-color grey_50 #777777;
+@define-color grey_55 #676562;
+@define-color grey_60 #57554f;
+@define-color grey_65 #4a483f;
+@define-color grey_70 #3d3b34;
+@define-color grey_75 #32302a;
+@define-color grey_80 #282622;
+@define-color grey_85 #1e1c19;
+@define-color grey_90 #151412;
+@define-color grey_95 #0c0b0a;
+@define-color grey_100 #000000;
+
+@define-color bg_color @grey_10;
+@define-color plugin_bg_color @grey_05;
+@define-color collapsible_bg_color @grey_15;
+@define-color border_color @grey_25;
+@define-color fg_color @grey_85;
+@define-color text_color @grey_90;
+@define-color plugin_label_color @grey_70;
+@define-color section_label @grey_75;
+@define-color disabled_fg_color @grey_40;
+@define-color placeholder_text_color @grey_45;
+
+@define-color scroll_bar_inactive @grey_30;
+@define-color scroll_bar_active @grey_50;
+@define-color scroll_bar_bg @grey_10;
+
+@define-color button_bg @grey_00;
+@define-color button_fg @grey_80;
+@define-color button_border @grey_25;
+@define-color button_hover_bg @grey_85;
+@define-color button_hover_fg @grey_05;
+
+@define-color field_bg @grey_00;
+@define-color field_fg @grey_85;
+@define-color field_active_bg @grey_10;
+@define-color field_active_fg @grey_90;
+@define-color field_selected_bg @grey_25;
+@define-color field_selected_fg @grey_95;
+@define-color field_hover_bg @grey_20;
+@define-color field_hover_fg @grey_95;
+
+@define-color bauhaus_bg @grey_00;
+@define-color bauhaus_fill @grey_60;
+@define-color bauhaus_fg @grey_85;
+@define-color bauhaus_border @grey_25;
+@define-color bauhaus_indicator_border @grey_30;
+@define-color bauhaus_bg_hover @grey_70;
+@define-color bauhaus_fg_hover @grey_05;
+@define-color bauhaus_fg_selected @grey_90;
+
+@define-color tooltip_bg_color @grey_90;
+@define-color tooltip_fg_color @grey_10;
+@define-color really_dark_bg_color @grey_15;
+@define-color log_fg_color @grey_90;
+
+/* picture surfaces: middle grey by design, a touch lighter for the table */
+@define-color darkroom_bg_color #777777;
+@define-color darkroom_preview_bg_color #777777;
+@define-color lighttable_bg_color #8a8a8a;
+@define-color lighttable_preview_bg_color #777777;
+@define-color lighttable_bg_font_color @grey_85;
+@define-color filmstrip_bg_color #9a9a9a;
+@define-color thumbnail_bg_color #a3a3a3;
+@define-color thumbnail_font_color @grey_80;
+@define-color thumbnail_fg_color @grey_70;
+@define-color thumbnail_selected_bg_color #c9c9c9;
+@define-color thumbnail_hover_bg_color #dedede;
+@define-color thumbnail_hover_fg_color @grey_90;
+@define-color thumbnail_star_bg_color #8a8a8a;
+@define-color thumbnail_star_hover_color @grey_90;
+@define-color timeline_bg_color #7f7f7f;
+@define-color timeline_fg_color @grey_90;
+
+/* graphs and histograms on paper */
+@define-color graph_bg @grey_05;
+@define-color graph_exterior @grey_10;
+@define-color graph_border @grey_30;
+@define-color graph_fg @grey_75;
+@define-color graph_fg_active @grey_95;
+@define-color graph_grid @grey_20;
+@define-color graph_overlay @grey_50;
+@define-color inset_histogram alpha(@grey_60, 0.50);
+
+/* hide selection frame in culling, as the elegant themes do */
+@define-color culling_selected_border_color transparent;
+
+/* shapes: hairlines and small radii everywhere darktable draws a box */
+button,
+entry,
+combobox button,
+.dt_bauhaus_popup,
+tooltip,
+notebook tab,
+frame > border
+{
+  border-radius: 3px;
+  border-width: 1px;
+}
+
+#iop-panel-label,
+#lib-panel-label,
+.dt_module_frame_header
+{
+  border-radius: 3px;
+}
+
+@import url("chunk-ibis-fonts.css");
