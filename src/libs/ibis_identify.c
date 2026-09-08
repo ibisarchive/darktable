@@ -134,6 +134,7 @@ typedef struct dt_lib_ibis_identify_t
   GtkWidget *region_label;
   GtkWidget *api_key;
   GtkWidget *country;
+  dt_gui_collapsible_section_t settings;
   // review: the hovered (else acted-on) frame's species and runners-up
   GtkWidget *review_title;
   GtkWidget *candidate[N_CANDIDATES];
@@ -836,7 +837,13 @@ static gboolean _job_finished_idle(gpointer data)
   {
     dt_print(DT_DEBUG_ALWAYS, "[ibis_identify] %s", j->error);
     dt_control_log(_("identify birds: %s"), j->error);
-    if(d) gtk_label_set_text(GTK_LABEL(d->status), j->error);
+    if(d)
+    {
+      gtk_label_set_text(GTK_LABEL(d->status), j->error);
+      // the fix for a missing key or model lives in settings: open them
+      dt_conf_set_bool("plugins/lighttable/ibis_identify/settings_expanded", TRUE);
+      dt_gui_update_collapsible_section(&d->settings);
+    }
   }
   else
   {
@@ -1257,8 +1264,9 @@ static void _review_update(dt_lib_module_t *self)
   {
     if(!cand[k]) continue;
     any = TRUE;
-    char *label = g_strdup_printf("%s  %d%%%s", cand[k], pct[k],
-                                  species && !strcmp(species, cand[k]) ? "  \xe2\x9c\x93" : "");
+    char *label = pct[k] < 1
+      ? g_strdup_printf("%s  <1%%%s", cand[k], species && !strcmp(species, cand[k]) ? "  \xe2\x9c\x93" : "")
+      : g_strdup_printf("%s  %d%%%s", cand[k], pct[k], species && !strcmp(species, cand[k]) ? "  \xe2\x9c\x93" : "");
     gtk_button_set_label(GTK_BUTTON(d->candidate[k]), label);
     g_free(label);
     g_object_set_data_full(G_OBJECT(d->candidate[k]), "ibis-species", g_strdup(cand[k]), g_free);
@@ -1274,11 +1282,80 @@ static void _review_signal(gpointer instance, dt_lib_module_t *self)
   _review_update(self);
 }
 
+// a labeled row for the settings section: caption left, control right,
+// so a masked key or a two-letter code never sits on screen unexplained
+static GtkWidget *_labeled_row(GtkGrid *grid, const int row, const char *caption, GtkWidget *control)
+{
+  GtkWidget *l = gtk_label_new(caption);
+  gtk_widget_set_halign(l, GTK_ALIGN_START);
+  gtk_label_set_xalign(GTK_LABEL(l), 0.0f);
+  gtk_grid_attach(grid, l, 0, row, 1, 1);
+  gtk_widget_set_hexpand(control, TRUE);
+  gtk_grid_attach(grid, control, 1, row, 1, 1);
+  return control;
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_ibis_identify_t *d = g_new0(dt_lib_ibis_identify_t, 1);
   self->data = d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+
+  // 1. act
+  d->run_button = dt_action_button_new(self, N_("identify selected"), _run_clicked, self,
+    _("run the bird classifier on the selected images\n"
+      "and tag each one Birds|Species|<name>"), 0, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->run_button, FALSE, FALSE, 0);
+
+  // 2. what happened, and which birds were candidates: one line each, never empty
+  d->status = gtk_label_new(_("select frames, then identify"));
+  gtk_label_set_ellipsize(GTK_LABEL(d->status), PANGO_ELLIPSIZE_END);
+  gtk_widget_set_halign(d->status, GTK_ALIGN_START);
+  gtk_label_set_xalign(GTK_LABEL(d->status), 0.0f);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->status, FALSE, FALSE, DT_PIXEL_APPLY_DPI(2));
+
+  d->region_label = gtk_label_new("");
+  gtk_label_set_ellipsize(GTK_LABEL(d->region_label), PANGO_ELLIPSIZE_END);
+  gtk_widget_set_halign(d->region_label, GTK_ALIGN_START);
+  gtk_label_set_xalign(GTK_LABEL(d->region_label), 0.0f);
+  gtk_widget_set_tooltip_text(d->region_label,
+    _("which birds were candidates: the species eBird lists for the\n"
+      "region of the frames' position (or your country), or every species"));
+  gtk_box_pack_start(GTK_BOX(self->widget), d->region_label, FALSE, FALSE, 0);
+
+  // 3. check the answer: the hovered (else selected) frame and its runners-up
+  d->review_title = gtk_label_new(_("hover or select a frame to review"));
+  gtk_label_set_ellipsize(GTK_LABEL(d->review_title), PANGO_ELLIPSIZE_END);
+  gtk_widget_set_halign(d->review_title, GTK_ALIGN_START);
+  gtk_label_set_xalign(GTK_LABEL(d->review_title), 0.0f);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->review_title, FALSE, FALSE, DT_PIXEL_APPLY_DPI(6));
+  for(int k = 0; k < N_CANDIDATES; k++)
+  {
+    d->candidate[k] = gtk_button_new_with_label("");
+    // species left, percentage right, like a ledger line
+    GtkWidget *inner = gtk_bin_get_child(GTK_BIN(d->candidate[k]));
+    if(GTK_IS_LABEL(inner))
+    {
+      gtk_label_set_xalign(GTK_LABEL(inner), 0.0f);
+      gtk_label_set_ellipsize(GTK_LABEL(inner), PANGO_ELLIPSIZE_END);
+    }
+    gtk_widget_set_tooltip_text(d->candidate[k], _("make this the frame's species"));
+    g_signal_connect(d->candidate[k], "clicked", G_CALLBACK(_candidate_clicked), self);
+    gtk_box_pack_start(GTK_BOX(self->widget), d->candidate[k], FALSE, FALSE, 0);
+    gtk_widget_set_no_show_all(d->candidate[k], TRUE);
+  }
+  d->no_bird = gtk_button_new_with_label(_("no bird here"));
+  gtk_button_set_relief(GTK_BUTTON(d->no_bird), GTK_RELIEF_NONE);
+  gtk_widget_set_tooltip_text(d->no_bird, _("remove the species and the candidates from the frame"));
+  g_signal_connect(d->no_bird, "clicked", G_CALLBACK(_no_bird_clicked), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->no_bird, FALSE, FALSE, 0);
+  gtk_widget_set_no_show_all(d->no_bird, TRUE);
+
+  // 4. settings, folded away: set once, rarely touched
+  dt_gui_new_collapsible_section(&d->settings, "plugins/lighttable/ibis_identify/settings_expanded",
+                                 _("settings"), GTK_BOX(self->widget), DT_ACTION(self));
+  gtk_widget_set_tooltip_text(d->settings.expander,
+    _("minimum score, eBird key and fallback country"));
 
   d->min_score = dt_bauhaus_slider_new_action(self, 0.0f, 1.0f, 0, 0.5f, 2);
   dt_bauhaus_widget_set_label(d->min_score, NULL, N_("minimum score"));
@@ -1287,48 +1364,13 @@ void gui_init(dt_lib_module_t *self)
     _("below this the frame is tagged Birds|Species|Unidentified\n"
       "instead of a species, so nothing is skipped silently"));
   g_signal_connect(d->min_score, "value-changed", G_CALLBACK(_min_score_changed), NULL);
-  gtk_box_pack_start(GTK_BOX(self->widget), d->min_score, FALSE, FALSE, 0);
+  gtk_box_pack_start(d->settings.container, d->min_score, FALSE, FALSE, 0);
 
-  d->run_button = dt_action_button_new(self, N_("identify selected"), _run_clicked, self,
-    _("run the bird classifier on the selected images\n"
-      "and tag each one Birds|Species|<name>"), 0, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), d->run_button, FALSE, FALSE, 0);
+  GtkWidget *grid = gtk_grid_new();
+  gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(8));
+  gtk_grid_set_row_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(2));
 
-  d->status = gtk_label_new("");
-  gtk_label_set_ellipsize(GTK_LABEL(d->status), PANGO_ELLIPSIZE_END);
-  gtk_widget_set_halign(d->status, GTK_ALIGN_START);
-  gtk_box_pack_start(GTK_BOX(self->widget), d->status, FALSE, FALSE, 0);
-
-  d->region_label = gtk_label_new("");
-  gtk_label_set_ellipsize(GTK_LABEL(d->region_label), PANGO_ELLIPSIZE_END);
-  gtk_widget_set_halign(d->region_label, GTK_ALIGN_START);
-  gtk_widget_set_tooltip_text(d->region_label,
-    _("which birds were candidates: the species eBird lists for the\n"
-      "region of the frames' position (or your country), or every species"));
-  gtk_box_pack_start(GTK_BOX(self->widget), d->region_label, FALSE, FALSE, 0);
-
-  // review
-  d->review_title = gtk_label_new(_("hover or select a frame to review"));
-  gtk_label_set_ellipsize(GTK_LABEL(d->review_title), PANGO_ELLIPSIZE_END);
-  gtk_widget_set_halign(d->review_title, GTK_ALIGN_START);
-  gtk_box_pack_start(GTK_BOX(self->widget), d->review_title, FALSE, FALSE, DT_PIXEL_APPLY_DPI(4));
-  for(int k = 0; k < N_CANDIDATES; k++)
-  {
-    d->candidate[k] = gtk_button_new_with_label("");
-    gtk_widget_set_tooltip_text(d->candidate[k], _("make this the frame's species"));
-    g_signal_connect(d->candidate[k], "clicked", G_CALLBACK(_candidate_clicked), self);
-    gtk_box_pack_start(GTK_BOX(self->widget), d->candidate[k], FALSE, FALSE, 0);
-    gtk_widget_set_no_show_all(d->candidate[k], TRUE);
-  }
-  d->no_bird = gtk_button_new_with_label(_("no bird here"));
-  gtk_widget_set_tooltip_text(d->no_bird, _("remove the species and the candidates from the frame"));
-  g_signal_connect(d->no_bird, "clicked", G_CALLBACK(_no_bird_clicked), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), d->no_bird, FALSE, FALSE, 0);
-  gtk_widget_set_no_show_all(d->no_bird, TRUE);
-
-  // settings: the eBird key and a fallback country
   d->api_key = gtk_entry_new();
-  gtk_entry_set_placeholder_text(GTK_ENTRY(d->api_key), _("eBird API key (ebird.org/api/keygen)"));
   gtk_entry_set_visibility(GTK_ENTRY(d->api_key), FALSE);
   char *key = dt_conf_get_string(CONF_API_KEY);
   gtk_entry_set_text(GTK_ENTRY(d->api_key), key ? key : "");
@@ -1337,16 +1379,20 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->api_key,
     _("lets identify birds ask eBird which species occur where the frames\n"
       "were taken, so only those are candidates. free at ebird.org/api/keygen"));
-  gtk_box_pack_start(GTK_BOX(self->widget), d->api_key, FALSE, FALSE, DT_PIXEL_APPLY_DPI(4));
+  _labeled_row(GTK_GRID(grid), 0, _("eBird API key"), d->api_key);
 
   d->country = gtk_entry_new();
-  gtk_entry_set_placeholder_text(GTK_ENTRY(d->country), _("country code when frames have no position (NO, NL, US...)"));
   gtk_entry_set_max_length(GTK_ENTRY(d->country), 2);
+  gtk_entry_set_width_chars(GTK_ENTRY(d->country), 4);
   char *cc = dt_conf_get_string(CONF_COUNTRY);
   gtk_entry_set_text(GTK_ENTRY(d->country), cc ? cc : "");
   g_free(cc);
   g_signal_connect(d->country, "changed", G_CALLBACK(_country_changed), NULL);
-  gtk_box_pack_start(GTK_BOX(self->widget), d->country, FALSE, FALSE, 0);
+  gtk_widget_set_tooltip_text(d->country,
+    _("two-letter country code used as the region when no frame has a position (NO, NL, US)"));
+  _labeled_row(GTK_GRID(grid), 1, _("fallback country"), d->country);
+
+  gtk_box_pack_start(d->settings.container, grid, FALSE, FALSE, DT_PIXEL_APPLY_DPI(2));
 
   d->review_imgid = NO_IMGID;
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, _review_signal);
