@@ -6,7 +6,9 @@ changes how they look (tokens) and adds surfaces built from the same kit.
 
 ## Principles
 
-1. The picture is the anchor. Panels are quiet; canvases stay middle grey.
+1. The picture is the anchor. Nothing behind a photo is brighter than the
+   photo: in the dark theme the canvas is the darkest surface, as in
+   Lightroom; the light theme keeps middle grey.
 2. Two tones, like the mark: ink and paper. Color appears only where
    darktable already uses it for meaning (color labels, stars, histogram).
 3. Utility language: orientation, status, action. Lowercase, no exclamation
@@ -17,8 +19,10 @@ changes how they look (tokens) and adds surfaces built from the same kit.
 
 ## Type
 
-- One family everywhere: Times New Roman; fallbacks Liberation Serif,
-  Tinos, Nimbus Roman, serif (`data/themes/chunk-ibis-fonts.css`).
+- Two voices (`data/themes/chunk-ibis-fonts.css`): the interface in Source
+  Sans 3 (OFL, bundled in `data/ibis/fonts`; fallbacks Source Sans Pro,
+  Segoe UI, Noto Sans), the brand in Times New Roman: wordmark and view
+  switcher only.
 - Sizes come from darktable's scale (base 1em ≈ 13 px at 100% dpi): body
   1em, module headers 1.05em, status lines 1em, the version string as
   darktable sets it. Never below 0.85em for text a user must read.
@@ -33,17 +37,18 @@ darktable rule that names a grey inverts with it.
 
 | Role                 | dark      | light     |
 |----------------------|-----------|-----------|
-| bg_color (panels)    | `#141414` | `#efede9` |
-| plugin_bg_color      | `#1c1c1c` | `#f7f6f3` |
+| bg_color (panels)    | `#2d2d2d` | `#efede9` |
+| plugin_bg_color      | `#2d2d2d` | `#f7f6f3` |
 | collapsible_bg_color | `#242424` | `#e6e4df` |
-| border_color         | `#2d2d2d` | `#cfccc5` |
-| fg_color (text)      | `#dedede` | `#1e1c19` |
-| plugin_label_color   | `#b3b3b3` | `#3d3b34` |
-| button_bg            | `#242424` | `#ffffff` |
-| button_hover_bg      | `#dedede` | `#1e1c19` |
-| field_bg             | `#0b0b0b` | `#ffffff` |
-| darkroom canvas      | `#777777` | `#777777` |
-| lighttable canvas    | `#383838` | `#8a8a8a` |
+| border_color         | `#3f3f3f` | `#cfccc5` |
+| fg_color (text, A)   | `#f4f4f4` | `#1e1c19` |
+| plugin_label_color (B) | `#bbbbbb` | `#3d3b34` |
+| fg_c (C)             | `#777777` | `#8c8984` |
+| button_bg            | `#3f3f3f` | `#ffffff` |
+| button_hover_bg      | `#555555` | `#1e1c19` |
+| field_bg             | `#1c1c1c` | `#ffffff` |
+| darkroom canvas      | `#1c1c1c` | `#777777` |
+| lighttable canvas    | `#1c1c1c` | `#8a8a8a` |
 | wordmark (pixmap)    | `#8f8f8f` | `#8f8f8f` |
 
 Contrast floor: 4.5:1 for text against its panel in both themes (dark
