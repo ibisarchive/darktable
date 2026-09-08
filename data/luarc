@@ -77,3 +77,10 @@ if dt.configuration.has_gui then
 end
 
 -- vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua
+
+-- Ibis Archive: the eBird checklist export storage ships with the
+-- application. A failure here must never stop darktable's own start-up.
+local ibis_ok, ibis_err = pcall(require, "ibis/ebird")
+if not ibis_ok then
+  dt.print_log("[ibis] eBird storage failed to load: " .. tostring(ibis_err))
+end
