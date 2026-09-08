@@ -4039,7 +4039,7 @@
   <dtconfig>
     <name>plugins/lighttable/ibis_identify/model_id</name>
     <type>string</type>
-    <default>classify-birds</default>
+    <default>classify-birds-global</default>
     <shortdescription>identify birds: model id</shortdescription>
     <longdescription>the id of the classifier model directory under the AI models folder (config.json, model.onnx, labels.txt)</longdescription>
   </dtconfig>
