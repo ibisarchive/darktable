@@ -1375,7 +1375,7 @@
   <dtconfig>
     <name>plugins/lighttable/overlays/0/1</name>
     <type>int</type>
-    <default>3</default>
+    <default>1</default>
     <shortdescription>overlays for filemanager at size 1 = on hover</shortdescription>
     <longdescription/>
   </dtconfig>
@@ -1396,14 +1396,14 @@
   <dtconfig>
     <name>plugins/lighttable/overlays/1/1</name>
     <type>int</type>
-    <default>1</default>
+    <default>3</default>
     <shortdescription>overlays for filmstrip at size 1 = on hover</shortdescription>
     <longdescription/>
   </dtconfig>
     <dtconfig>
     <name>plugins/lighttable/overlays/1/2</name>
     <type>int</type>
-    <default>1</default>
+    <default>3</default>
     <shortdescription>overlays for filmstrip at size 2 = on hover</shortdescription>
     <longdescription/>
   </dtconfig>
