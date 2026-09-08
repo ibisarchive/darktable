@@ -1375,7 +1375,7 @@
   <dtconfig>
     <name>plugins/lighttable/overlays/0/1</name>
     <type>int</type>
-    <default>1</default>
+    <default>3</default>
     <shortdescription>overlays for filemanager at size 1 = on hover</shortdescription>
     <longdescription/>
   </dtconfig>
@@ -4213,7 +4213,7 @@
   <dtconfig>
     <name>plugins/darkroom/modulegroups_preset</name>
     <type>string</type>
-    <default></default>
+    <default>workflow: birds</default>
     <shortdescription>preset use for defining iop layout</shortdescription>
     <longdescription>preset use for defining iop layout</longdescription>
   </dtconfig>

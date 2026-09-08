@@ -182,7 +182,7 @@ uint32_t container(dt_lib_module_t *self)
 
 int position(const dt_lib_module_t *self)
 {
-  return 410; // just below neural restore
+  return 900; // the top of the lighttable's right panel: after culling, this is the next step
 }
 
 // --- labels ---------------------------------------------------------------

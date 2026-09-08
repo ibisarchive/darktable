@@ -84,3 +84,8 @@ local ibis_ok, ibis_err = pcall(require, "ibis/ebird")
 if not ibis_ok then
   dt.print_log("[ibis] eBird storage failed to load: " .. tostring(ibis_err))
 end
+-- the workspace: which modules show, which are open (see data/lua/ibis/workspace.lua)
+local ws_ok, ws_err = pcall(require, "ibis/workspace")
+if not ws_ok then
+  dt.print_log("[ibis] workspace failed to load: " .. tostring(ws_err))
+end

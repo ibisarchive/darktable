@@ -144,4 +144,27 @@ frame > border
   border-radius: 3px;
 }
 
+/* density: a little more air in module headers and between rows, the
+   calm that Lightroom's panels get from spacing rather than from chrome */
+#iop-panel-label,
+#lib-panel-label
+{
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.dt_plugin_ui
+{
+  padding-top: 4px;
+  padding-bottom: 6px;
+}
+
+.dt_bauhaus,
+entry,
+button
+{
+  margin-top: 1px;
+  margin-bottom: 1px;
+}
+
 @import url("chunk-ibis-fonts.css");

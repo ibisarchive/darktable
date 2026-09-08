@@ -1758,6 +1758,37 @@ void init_presets(dt_lib_module_t *self)
   dt_lib_presets_add(_("workflow: beginner"),
                      self->plugin_name, self->version(), tx, strlen(tx), TRUE, 0);
 
+  // Ibis Archive: the birding darkroom. exposure, crop and geometry, white
+  // balance and tone, then detail (denoise, sharpen, lens) and color. the
+  // rest stays reachable through search
+  SQA(is_scene_referred);
+
+  SMG(C_("modulegroup", "base"), "basic");
+  AM("exposure");
+  AM("crop");
+  AM("ashift");
+  AM("flip");
+  AM("temperature");
+  if(is_scene_referred)
+    AM("sigmoid");
+  else
+    AM("basecurve");
+
+  SMG(C_("modulegroup", "detail"), "correct");
+  AM("denoiseprofile");
+  AM("sharpen");
+  AM("diffuse");
+  AM("lens");
+  AM("hazeremoval");
+
+  SMG(C_("modulegroup", "color"), "color");
+  AM("colorbalancergb");
+  AM("colorequal");
+  AM("channelmixerrgb");
+
+  dt_lib_presets_add(_("workflow: birds"),
+                     self->plugin_name, self->version(), tx, strlen(tx), TRUE, 0);
+
   // display referred
   SQA(FALSE);
 

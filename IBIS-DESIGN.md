@@ -213,3 +213,58 @@ _No new tasks from Pass 6 (Responsive and Accessibility)._
 - **VERDICT:** DESIGN CLEARED — eng review required before the panel rebuild lands.
 
 NO UNRESOLVED DECISIONS
+
+## Whole-app flow review (added 2026-09-08 after the panel review; requested because the overall layout and setup were not convincing)
+
+darktable ships every module for every photographer. Ibis owns three levers
+that darktable exposes as data: which modules are visible per view
+(`plugins/<view>/<module>_visible` conf keys, defaults in
+darktableconfig.xml.in), the darkroom module-group preset (defined in
+modulegroups.c, one small fork addition), and view defaults (layout,
+overlays). Module order inside a panel is fixed by each module's position
+number; only the Ibis module's number is ours to set.
+
+### The birding journey, view by view
+
+```
+STEP | VIEW        | USER DOES                          | NEEDS ON SCREEN                              | TODAY
+-----|-------------|------------------------------------|----------------------------------------------|----------------------------------------------
+1    | lighttable  | import the card / folder            | import, collections                          | + recent collections, filters, image info (fine)
+2    | lighttable  | cull: stars, reject, compare        | thumbnails with stars visible, culling mode  | overlays hidden until hover; culling via key
+3    | lighttable  | identify birds on the keepers       | identify birds at the TOP of the right panel | 7th of 11 modules, between styles and neural restore
+4    | lighttable  | review: hover, fix species          | review block in the same module              | present, buried
+5    | map         | drop frames without GPS on the map  | map, collections                             | fine (map settings, locations rarely needed)
+6    | lighttable  | export the checklist                | export with the eBird storage                | generic export at the bottom; storage picked by hand
+7    | darkroom    | edit a keeper                       | exposure, crop, denoise, sharpen, color      | 60+ modules in scene-referred groups
+```
+
+Modules on the lighttable right panel today, top to bottom: selection,
+actions on selection, history stack, styles, metadata editor, tagging,
+geotagging, identify birds, neural restore, export. A birder uses four of
+them every outing.
+
+### Decision: the Ibis workspace (2026-09-08, whole-app flow)
+
+Implemented through darktable's own levers, no new UI kit:
+
+```
+LEVER                         | MECHANISM                                   | IBIS SETTING
+------------------------------|---------------------------------------------|------------------------------------------------------
+module visibility per view    | Lua: dt.gui.libs[x].visible (workspace.lua) | lighttable right: identify birds, geotagging, tagging,
+                              | applied once, user changes then persist     |   metadata editor, export, selection
+                              |                                             | hidden: styles, history stack, actions on selection,
+                              |                                             |   neural restore, recent collections
+                              |                                             | darkroom: neural restore hidden; rest as darktable
+module order                  | position() in our module                    | identify birds 900 = top of the right panel
+module expanded by default    | Lua: dt.gui.libs[x].expanded                | identify birds open; tagging, geotagging, export closed
+thumbnail overlays            | conf default                                | stars and labels always shown (culling reads at a glance)
+darkroom module groups        | modulegroups.c preset "workflow: birds"     | basics: exposure, crop, rotate, white balance, tone
+                              | + conf default                              | detail: denoise, sharpen, lens; color: color balance,
+                              |                                             |   color equalizer; everything else via search
+theme                         | conf default ui_last/theme                  | ibis-dark
+density                       | ibis-*.css                                  | +2 px row padding, +4 px module header padding
+first run                     | darktable's own welcome + lighttable        | unchanged; models state handled by identify birds (2A)
+```
+
+Everything a birder does not use stays one click away in the module
+visibility menu; nothing is removed from the application.
