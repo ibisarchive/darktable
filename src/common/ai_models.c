@@ -73,6 +73,7 @@ static const struct
   const char *label;
 } _task_labels[] = {
   { "denoise",    N_("denoise")     },
+  { "classify",   N_("classify")    },
   { "rawdenoise", N_("raw denoise") },
   { "upscale",    N_("upscale")     },
   { "mask",       N_("mask")        },

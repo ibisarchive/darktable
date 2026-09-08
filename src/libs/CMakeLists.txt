@@ -120,6 +120,10 @@ if(USE_AI)
   add_library(neural_restore MODULE "neural_restore.c")
   target_link_libraries(neural_restore TIFF::TIFF)
   set(MODULES ${MODULES} neural_restore)
+
+  # Ibis Archive: identify birds (ONNX classifier through the AI backend)
+  add_library(ibis_identify MODULE "ibis_identify.c")
+  set(MODULES ${MODULES} ibis_identify)
 endif(USE_AI)
 
 # Add libs references

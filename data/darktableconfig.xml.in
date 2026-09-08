@@ -4030,6 +4030,20 @@
     <longdescription>this folder (and sub-folders) contains PFM/PNG files used by the raster mask import module. (restart required)</longdescription>
   </dtconfig>
 <dtconfig>
+    <name>plugins/lighttable/ibis_identify/min_score</name>
+    <type min="0.0" max="1.0">float</type>
+    <default>0.5</default>
+    <shortdescription>identify birds: minimum score</shortdescription>
+    <longdescription>a frame is tagged with a species only when the classifier's top score is at least this; below it the frame is tagged Birds|Species|Unidentified so it is not silently skipped</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/ibis_identify/model_id</name>
+    <type>string</type>
+    <default>classify-birds</default>
+    <shortdescription>identify birds: model id</shortdescription>
+    <longdescription>the id of the classifier model directory under the AI models folder (config.json, model.onnx, labels.txt)</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/lighttable/neural_restore/mark_output</name>
     <type>bool</type>
     <default>true</default>

@@ -1,0 +1,10 @@
+{
+  "id": "classify-birds",
+  "name": "bird species classifier (North America, 499 classes)",
+  "description": "Kestrel species head. Input 'data' float32 NCHW 1x3x300x300, RGB, 0..255 unnormalised. Output 'model_output' 1x499 scores aligned with labels.txt.",
+  "task": "classify",
+  "backend": "onnx",
+  "version": "1.0",
+  "num_inputs": 1,
+  "arch": "kestrel-species-v1"
+}
