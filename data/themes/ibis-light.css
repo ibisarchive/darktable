@@ -162,13 +162,13 @@ frame > border
 #iop-panel-label,
 #lib-panel-label
 {
-  padding-top: 5px;
-  padding-bottom: 5px;
+  padding-top: 3px;
+  padding-bottom: 3px;
 }
 
 .dt_plugin_ui
 {
-  padding-top: 4px;
+  padding-top: 2px;
   padding-bottom: 6px;
 }
 
@@ -178,6 +178,13 @@ button
 {
   margin-top: 1px;
   margin-bottom: 1px;
+}
+
+
+/* grid: Lightroom's two-pixel gutter; values are per-thousand of the cell */
+#thumb-image
+{
+  margin: 10px 4px;
 }
 
 @import url("chunk-ibis-fonts.css");

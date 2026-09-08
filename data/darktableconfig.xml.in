@@ -2439,8 +2439,64 @@
   <dtconfig common="yes">
     <name>font_size</name>
     <type>float</type>
-    <default>12.0</default>
+    <default>10.0</default>
     <shortdescription>font size</shortdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>lighttable/ui/1/left_size</name>
+    <type>int</type>
+    <default>300</default>
+    <shortdescription>side panel width in pixels</shortdescription>
+    <longdescription>Ibis Archive: side panels sized like Lightroom, about 300 logical pixels; stored per view and layout by darktable</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>lighttable/ui/1/right_size</name>
+    <type>int</type>
+    <default>300</default>
+    <shortdescription>side panel width in pixels</shortdescription>
+    <longdescription>Ibis Archive: side panels sized like Lightroom, about 300 logical pixels; stored per view and layout by darktable</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>lighttable/ui/2/left_size</name>
+    <type>int</type>
+    <default>300</default>
+    <shortdescription>side panel width in pixels</shortdescription>
+    <longdescription>Ibis Archive: side panels sized like Lightroom, about 300 logical pixels; stored per view and layout by darktable</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>lighttable/ui/2/right_size</name>
+    <type>int</type>
+    <default>300</default>
+    <shortdescription>side panel width in pixels</shortdescription>
+    <longdescription>Ibis Archive: side panels sized like Lightroom, about 300 logical pixels; stored per view and layout by darktable</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>darkroom/ui/0/left_size</name>
+    <type>int</type>
+    <default>300</default>
+    <shortdescription>side panel width in pixels</shortdescription>
+    <longdescription>Ibis Archive: side panels sized like Lightroom, about 300 logical pixels; stored per view and layout by darktable</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>darkroom/ui/0/right_size</name>
+    <type>int</type>
+    <default>300</default>
+    <shortdescription>side panel width in pixels</shortdescription>
+    <longdescription>Ibis Archive: side panels sized like Lightroom, about 300 logical pixels; stored per view and layout by darktable</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>map/ui/left_size</name>
+    <type>int</type>
+    <default>300</default>
+    <shortdescription>side panel width in pixels</shortdescription>
+    <longdescription>Ibis Archive: side panels sized like Lightroom, about 300 logical pixels; stored per view and layout by darktable</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>map/ui/right_size</name>
+    <type>int</type>
+    <default>300</default>
+    <shortdescription>side panel width in pixels</shortdescription>
+    <longdescription>Ibis Archive: side panels sized like Lightroom, about 300 logical pixels; stored per view and layout by darktable</longdescription>
   </dtconfig>
   <dtconfig prefs="general" section="general">
     <name>ui/csd_titlebar</name>
