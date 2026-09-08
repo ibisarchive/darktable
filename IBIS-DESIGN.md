@@ -169,7 +169,7 @@ open.
 Synthesized from this review's findings. Each task derives from a specific
 finding above. Run with Claude Code or Codex; checkbox as you ship.
 
-- [ ] **T1 (P1, human: ~2h / CC: ~15min)** — identify birds panel — rebuild gui_init in mockup order: button, one status line, review block, collapsed settings with labeled rows
+- [x] **T1 (P1, human: ~2h / CC: ~15min)** — identify birds panel — rebuild gui_init in mockup order: button, one status line, review block, collapsed settings with labeled rows
   - Surfaced by: Pass 1 — decision 1A
   - Files: src/libs/ibis_identify.c
   - Verify: screenshot of the panel matches variant-C.png top to bottom; labels visible with empty fields
@@ -185,11 +185,11 @@ finding above. Run with Claude Code or Codex; checkbox as you ship.
   - Surfaced by: Pass 3 — decision 3A, Pass 2 table (EMPTY, ERROR)
   - Files: data/lua/ibis/ebird.lua (selection-changed event -> label refresh)
   - Verify: select 36 frames, panel reads "3 species · 36 frames · 11 Jan 2023 · Bjerkreim--Spodavoll · position: yes"
-- [ ] **T5 (P2, human: ~30min / CC: ~5min)** — identify birds panel — candidate rows show "<1%" instead of "0%"; percentage right-aligned; check mark on the current species
+- [x] **T5 (P2, human: ~30min / CC: ~5min)** — identify birds panel — candidate rows show "<1%" instead of "0%"; percentage right-aligned; check mark on the current species
   - Surfaced by: Pass 4, Pass 7
   - Files: src/libs/ibis_identify.c (_review_update)
   - Verify: hover a frame whose runners-up are below 1%
-- [ ] **T6 (P2, human: ~1h / CC: ~10min)** — identify birds panel — settings disclosure opens itself when a required value is missing (no key, no models), so the error points at a visible field
+- [x] **T6 (P2, human: ~1h / CC: ~10min)** — identify birds panel — settings disclosure opens itself when a required value is missing (no key, no models), so the error points at a visible field
   - Surfaced by: Pass 7 decisions table
   - Files: src/libs/ibis_identify.c
   - Verify: clear the key, run identify: settings open and the key row is highlighted
@@ -208,6 +208,8 @@ finding above. Run with Claude Code or Codex; checkbox as you ship.
   - Verify: a reader can turn hidden modules back on from the text alone
 
 _No new tasks from Pass 6 (Responsive and Accessibility)._
+
+Done by /design-review on 2026-09-08 (branch ibis/main): T1, T5, T6, plus stars always shown on the grid and calmer selected-thumbnail colour (findings F003, F004).
 
 ## Whole-app flow review (added 2026-09-08 after the panel review; requested because the overall layout and setup were not convincing)
 
