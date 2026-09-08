@@ -1848,7 +1848,7 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     const float r1 =
       fminf(max_size / 2.0f,
             (width - thumb->img_margin->left - thumb->img_margin->right)
-            / (2.5 * (4 + MAX_STARS)));
+            / (2.5 * (4 + MAX_STARS) * 1.8));   // Ibis: glyphs at Lightroom's size, about 12 px on a 290 px cell
     const int icon_size = roundf(2.5 * r1);
 
     // file extension
@@ -1924,11 +1924,13 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     gtk_widget_set_size_request(thumb->w_local_copy, 1.618 * r1, 1.618 * r1);
     gtk_widget_set_halign(thumb->w_local_copy, GTK_ALIGN_END);
 
-    // the altered icon
+    // the altered icon: Ibis puts it bottom-right beside the color dot, as Lightroom's edited mark
     gtk_widget_set_size_request(thumb->w_altered, 2.0 * r1, 2.0 * r1);
     gtk_widget_set_halign(thumb->w_altered, GTK_ALIGN_END);
-    gtk_widget_set_margin_top(thumb->w_altered, thumb->img_margin->top);
-    gtk_widget_set_margin_end(thumb->w_altered, thumb->img_margin->right);
+    gtk_widget_set_valign(thumb->w_altered, GTK_ALIGN_END);
+    gtk_widget_set_margin_top(thumb->w_altered, 0);
+    gtk_widget_set_margin_bottom(thumb->w_altered, margin_b_icons + 0.25 * r1);
+    gtk_widget_set_margin_end(thumb->w_altered, thumb->img_margin->right + icon_size);
 
     // the tags icon
     gtk_widget_set_size_request(thumb->w_tags, 2.0 * r1, 2.0 * r1);
@@ -1964,7 +1966,8 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     // on a thumbnail width all icons having a width of 3.0 * r1 => 21
     // * r1 we want r1 spaces at extremities, after reject, before
     // colorlables => 4 * r1
-    const float r1 = fminf(max_size / 2.0f, width / 25.0f);
+    // Ibis: stars, flag and color dot at Lightroom's size, about 4% of the cell
+    const float r1 = fminf(max_size / 2.0f, width / 40.0f);
 
     // file extension
     gtk_widget_set_margin_top(thumb->w_ext, 0.03 * width + py);
@@ -2151,15 +2154,19 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb,
     fminf(max_size,
           (height - thumb->img_margin->top - thumb->img_margin->bottom) / 11.0f);
 
+  // Ibis: name at Lightroom's 12 px for a 290 px cell, badge smaller still
   PangoAttrList *attrlist = pango_attr_list_new();
-  PangoAttribute *attr = pango_attr_size_new_absolute(fsize * PANGO_SCALE);
+  PangoAttribute *attr = pango_attr_size_new_absolute(fsize * 0.55f * PANGO_SCALE);
   pango_attr_list_insert(attrlist, attr);
+  PangoAttrList *namelist = pango_attr_list_new();
+  pango_attr_list_insert(namelist, pango_attr_size_new_absolute(fsize * 0.72f * PANGO_SCALE));
   // the idea is to reduce line-height, but it doesn't work for whatever reason...
   // PangoAttribute *attr2 = pango_attr_rise_new(-fsize * PANGO_SCALE);
   // pango_attr_list_insert(attrlist, attr2);
   gtk_label_set_attributes(GTK_LABEL(thumb->w_ext), attrlist);
-  gtk_label_set_attributes(GTK_LABEL(thumb->w_name), attrlist);
+  gtk_label_set_attributes(GTK_LABEL(thumb->w_name), namelist);
   pango_attr_list_unref(attrlist);
+  pango_attr_list_unref(namelist);
 
   // for overlays different than block, we compute their size here, so
   // we have valid value for th image area compute

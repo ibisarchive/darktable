@@ -233,8 +233,8 @@ button
 {
   color: @grey_05;
   background-color: @grey_60;
-  border-radius: 3px;
-  padding: 0 0.4em;
+  border-radius: 2px;
+  padding: 0 0.35em;
   font-weight: bold;
 }
 #thumb-main:hover #thumb-ext { color: @grey_95; }
