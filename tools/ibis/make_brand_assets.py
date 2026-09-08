@@ -2,15 +2,20 @@
 """Render the Ibis Archive brand assets into data/pixmaps.
 
 Source: the Ibis mark (white bird on a black square, Group 5.png) and the
-wordmark text. Everything darktable shows as its own logo is replaced by
-a data file, so the C code stays untouched:
+program name set in Times New Roman. Everything darktable shows as its own
+logo is replaced by a data file, so the C code stays untouched:
 
     idbutton.png, idbutton-N.png      top-left panel logo (40 px) and seasonal variants
-    idbutton.svg, idbutton-N.svg      splash and welcome screens (PNG embedded)
+    idbutton.svg, idbutton-N.svg      same, SVG (splash, welcome, panel)
     darktable.svg                     splash program name (wordmark)
-    dt_text.svg                       about dialog program name (wordmark)
+    dt_text.svg                       panel / about program name (wordmark)
     dt_logo_128x128.png / .ico        Windows executable and installer icon
     <size>/darktable.png, scalable/*  application icons
+
+darktable draws several of these at the SVG's own width/height (it passes
+no size), so the intrinsic sizes below match the stock files exactly:
+idbutton.svg 40 x 40, dt_text.svg 103.03 x 18.222, darktable.svg
+132.44 x 21.47. The embedded PNGs are rendered larger and scaled down.
 
 Usage: python make_brand_assets.py --mark "Group 5.png" --pixmaps data/pixmaps
 """
@@ -18,16 +23,25 @@ import argparse
 import base64
 import io
 import os
-import shutil
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 
 SIZES = [16, 22, 24, 32, 48, 64, 256]
 WORDMARK = "Ibis Archive"
+FONT_FILES = [
+    r"C:\Windows\Fonts\times.ttf",
+    "/usr/share/fonts/truetype/liberation/LiberationSerif-Regular.ttf",
+    "/Library/Fonts/Times New Roman.ttf",
+]
+
+# stock intrinsic sizes (px), read from the darktable files being replaced
+PANEL_LOGO = 40.0
+TEXT_H = 18.222      # dt_text.svg
+SPLASH_TEXT_H = 21.47  # darktable.svg (mm in the original, unitless here)
 
 
 def rounded(mark, size, radius_frac=0.18):
-    """The mark scaled to size, with rounded corners so it sits well as an icon."""
+    """The mark scaled to size with rounded corners, so it sits well as an icon."""
     im = mark.convert("RGBA").resize((size, size), Image.LANCZOS)
     mask = Image.new("L", (size, size), 0)
     ImageDraw.Draw(mask).rounded_rectangle((0, 0, size - 1, size - 1), radius=int(size * radius_frac), fill=255)
@@ -42,24 +56,44 @@ def png_bytes(im):
     return b.getvalue()
 
 
-def svg_with_png(im, size):
-    """An SVG that is just the PNG, for the places darktable insists on SVG."""
+def svg_with_png(im, width, height):
+    """An SVG that is just the PNG. width/height are the display size darktable
+    will use when it asks for none; the PNG may be larger and is scaled."""
     data = base64.b64encode(png_bytes(im)).decode("ascii")
     return (f'<?xml version="1.0" encoding="UTF-8"?>\n'
             f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" '
-            f'width="{size}" height="{size}" viewBox="0 0 {size} {size}">\n'
-            f'  <image width="{size}" height="{size}" xlink:href="data:image/png;base64,{data}"/>\n'
+            f'width="{width:g}" height="{height:g}" viewBox="0 0 {width:g} {height:g}">\n'
+            f'  <image width="{width:g}" height="{height:g}" preserveAspectRatio="xMidYMid meet" '
+            f'xlink:href="data:image/png;base64,{data}"/>\n'
             f'</svg>\n')
 
 
-def wordmark_svg(fill):
-    """The program name in the brand face. rsvg renders the text with the
-    system's Times New Roman (or its metric twin)."""
-    return ('<?xml version="1.0" encoding="UTF-8"?>\n'
-            '<svg xmlns="http://www.w3.org/2000/svg" width="480" height="78" viewBox="0 0 480 78">\n'
-            f'  <text x="0" y="60" font-family="Times New Roman, Liberation Serif, Tinos, serif" '
-            f'font-size="64" fill="{fill}">{WORDMARK}</text>\n'
-            '</svg>\n')
+def wordmark_png(fill, px=256):
+    """The program name in Times New Roman as a tight PNG, so the result does
+    not depend on which fonts the viewer's rsvg can see."""
+    font = None
+    for cand in FONT_FILES:
+        if os.path.exists(cand):
+            font = ImageFont.truetype(cand, px)
+            break
+    if font is None:
+        raise SystemExit("no Times New Roman / Liberation Serif font file found")
+    d = ImageDraw.Draw(Image.new("RGBA", (1, 1)))
+    x0, y0, x1, y1 = d.textbbox((0, 0), WORDMARK, font=font)
+    pad = px // 20
+    im = Image.new("RGBA", (x1 - x0 + 2 * pad, y1 - y0 + 2 * pad), (0, 0, 0, 0))
+    ImageDraw.Draw(im).text((pad - x0, pad - y0), WORDMARK, font=font, fill=fill)
+    return im
+
+
+def wordmark_svg(fill, height):
+    im = wordmark_png(fill)
+    return svg_with_png(im, round(height * im.width / im.height, 3), height)
+
+
+def write(path, text):
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(text)
 
 
 def main():
@@ -71,33 +105,28 @@ def main():
     mark = Image.open(args.mark).convert("RGBA")
     px = args.pixmaps
 
-    # panel logo and seasonal variants (darktable swaps these by date; one mark, always)
-    small = rounded(mark, 40)
+    # panel logo and the seasonal variants darktable swaps in by date: one mark, always
+    small = rounded(mark, int(PANEL_LOGO))
     for name in ["idbutton.png", "idbutton-1.png", "idbutton-2.png", "idbutton-3.png"]:
         small.save(os.path.join(px, name), "PNG", optimize=True)
-    big_svg = svg_with_png(rounded(mark, 512), 512)
+    panel_svg = svg_with_png(rounded(mark, 512), PANEL_LOGO, PANEL_LOGO)
     for name in ["idbutton.svg", "idbutton-1.svg", "idbutton-2.svg", "idbutton-3.svg"]:
-        with open(os.path.join(px, name), "w", encoding="utf-8") as f:
-            f.write(big_svg)
+        write(os.path.join(px, name), panel_svg)
 
-    # wordmarks: the splash is dark, the about dialog follows the theme's text
-    with open(os.path.join(px, "darktable.svg"), "w", encoding="utf-8") as f:
-        f.write(wordmark_svg("#ffffff"))
-    with open(os.path.join(px, "dt_text.svg"), "w", encoding="utf-8") as f:
-        f.write(wordmark_svg("#c4c4c4"))
+    # wordmarks: the splash is dark; the panel/about mark follows the stock grey
+    write(os.path.join(px, "darktable.svg"), wordmark_svg("#ffffff", SPLASH_TEXT_H))
+    write(os.path.join(px, "dt_text.svg"), wordmark_svg("#c4c4c4", TEXT_H))
 
     # application icons
     for s in SIZES:
         d = os.path.join(px, f"{s}x{s}")
         os.makedirs(d, exist_ok=True)
         rounded(mark, s).save(os.path.join(d, "darktable.png"), "PNG", optimize=True)
-    scal = os.path.join(px, "scalable")
+    icon_svg = svg_with_png(rounded(mark, 512), 512, 512)
     for name in ["darktable.svg", "darktable-1.svg", "darktable-2.svg", "darktable-3.svg", "darktable_macos_icon.svg"]:
-        with open(os.path.join(scal, name), "w", encoding="utf-8") as f:
-            f.write(big_svg)
+        write(os.path.join(px, "scalable", name), icon_svg)
 
-    logo128 = rounded(mark, 128)
-    logo128.save(os.path.join(px, "dt_logo_128x128.png"), "PNG", optimize=True)
+    rounded(mark, 128).save(os.path.join(px, "dt_logo_128x128.png"), "PNG", optimize=True)
     rounded(mark, 256).save(os.path.join(px, "dt_logo_128x128.ico"), format="ICO",
                             sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)])
     print("brand assets written to", px)
