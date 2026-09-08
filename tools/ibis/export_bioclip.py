@@ -144,6 +144,7 @@ def write_manifest(out, model_name, n_species, embed_dim, logit_scale):
         "version": "1.1",
         "num_inputs": 1,
         "arch": "bioclip",
+        "ort_optimization": "basic",
         "attributes": {
             "input_size": 224,
             "mean": MEAN,

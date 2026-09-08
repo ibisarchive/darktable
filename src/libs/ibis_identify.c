@@ -98,7 +98,6 @@ DT_MODULE(1)
 #define TAG_ROOT      "Birds|Species|"
 #define TAG_UNKNOWN   "Birds|Species|Unidentified"
 #define INPUT_SIDE    300
-#define MAX_LABELS    4096
 
 #define DET_SIDE      640
 #define CLIP_SIDE     224
@@ -517,7 +516,7 @@ static char **_load_labels(const char *model_id, int *count)
 
   const char *start = text;
   if(g_str_has_prefix(start, "\xEF\xBB\xBF")) start += 3;
-  char **lines = g_strsplit(start, "\n", MAX_LABELS);
+  char **lines = g_strsplit(start, "\n", -1);
   g_free(text);
 
   int n = 0;
@@ -835,6 +834,7 @@ static gboolean _job_finished_idle(gpointer data)
 
   if(j->error)
   {
+    dt_print(DT_DEBUG_ALWAYS, "[ibis_identify] %s", j->error);
     dt_control_log(_("identify birds: %s"), j->error);
     if(d) gtk_label_set_text(GTK_LABEL(d->status), j->error);
   }
@@ -896,7 +896,9 @@ static int32_t _job_run(dt_job_t *job)
     goto done;
   }
 
+  const double t_load = dt_get_wtime();
   dt_ai_context_t *ctx = dt_ai_load_model(env, j->model_id, NULL, DT_AI_PROVIDER_CONFIGURED);
+  dt_print(DT_DEBUG_ALWAYS, "[ibis_identify] model %s %s in %.1fs", j->model_id, ctx ? "loaded" : "FAILED", dt_get_wtime() - t_load);
   if(!ctx)
   {
     j->error = g_strdup_printf(_("model '%s' failed to load"), j->model_id);
