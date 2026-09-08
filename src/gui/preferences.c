@@ -739,7 +739,7 @@ void dt_gui_preferences_show()
   dt_stop_backthumbs_crawler(FALSE);
   GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
   _preferences_dialog =
-    gtk_dialog_new_with_buttons(_("darktable preferences"), win,
+    gtk_dialog_new_with_buttons(_("Ibis Archive preferences"), win,
                                 GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
                                 NULL, NULL);
   dt_gui_dialog_restore_size(GTK_DIALOG(_preferences_dialog), "preferences");

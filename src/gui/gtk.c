@@ -1559,7 +1559,11 @@ static gboolean _check_ssd_support(void)
   else
 #endif
   {
-    // X11, MacOS, and Windows can handle SSD
+    // X11, MacOS, and Windows can handle SSD; Ibis prefers its own dark
+    // title bar on Windows so the frame follows the theme (ui/csd_titlebar)
+#ifdef _WIN32
+    if(dt_conf_get_bool("ui/csd_titlebar")) return FALSE;
+#endif
     return TRUE;
   }
 }
@@ -2384,7 +2388,7 @@ static void _init_widgets(dt_gui_gtk_t *gui)
     // titlebar which allows for hiding that titlebar in maximized
     // windows when using an extensions such as Unite
     GtkWidget *header_bar = gtk_header_bar_new();
-    gtk_header_bar_set_title(GTK_HEADER_BAR(header_bar), "darktable");
+    gtk_header_bar_set_title(GTK_HEADER_BAR(header_bar), "Ibis Archive");
     gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(header_bar), TRUE);
     gtk_window_set_titlebar(GTK_WINDOW(widget), header_bar);
     gtk_widget_show(header_bar);

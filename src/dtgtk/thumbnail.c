@@ -1509,7 +1509,8 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb,
     thumb->w_ext = gtk_label_new("");
     gtk_widget_set_name(thumb->w_ext, "thumb-ext");
     gtk_widget_set_valign(thumb->w_ext, GTK_ALIGN_START);
-    gtk_widget_set_halign(thumb->w_ext, GTK_ALIGN_START);
+    // Ibis: format badge top-right, so the top-left corner stays quiet
+    gtk_widget_set_halign(thumb->w_ext, GTK_ALIGN_END);
     gtk_label_set_justify(GTK_LABEL(thumb->w_ext), GTK_JUSTIFY_CENTER);
     gtk_widget_show(thumb->w_ext);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_ext);
@@ -1835,7 +1836,7 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
 
     // file extension
     gtk_widget_set_margin_top(thumb->w_ext, thumb->img_margin->top);
-    gtk_widget_set_margin_start(thumb->w_ext, thumb->img_margin->left);
+    gtk_widget_set_margin_end(thumb->w_ext, thumb->img_margin->right);
 
     // bottom background
     gtk_widget_set_margin_start(thumb->w_bottom, thumb->img_margin->left);
@@ -1948,7 +1949,7 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
 
     // file extension
     gtk_widget_set_margin_top(thumb->w_ext, 0.03 * width + py);
-    gtk_widget_set_margin_start(thumb->w_ext, 0.03 * width + px);
+    gtk_widget_set_margin_end(thumb->w_ext, 0.03 * width + px);
 
     // bottom background
     attrlist = pango_attr_list_new();
