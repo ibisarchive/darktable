@@ -198,21 +198,16 @@ finding above. Run with Claude Code or Codex; checkbox as you ship.
   - Files: data/themes/ibis-dark.css, data/themes/ibis-light.css
   - Verify: both files reference DESIGN.md; dialog screenshots reviewed
 
+- [ ] **T8 (P2, CC: ~20min)** — map view — attribution line for Mapbox tiles ("© Mapbox © OpenStreetMap") drawn in the map's corner when the custom provider is active; the OSD copyright is empty for a custom source
+  - Surfaced by: flow review, map tiles decision
+  - Files: src/views/map.c
+  - Verify: attribution visible with Mapbox tiles, absent with built-in sources (which carry their own)
+- [ ] **T9 (P3, CC: ~10min)** — workspace — README-IBIS: document the workspace levers (workspace.lua, preset, defaults) and how a user restores darktable's full layout
+  - Surfaced by: flow review
+  - Files: README-IBIS.md
+  - Verify: a reader can turn hidden modules back on from the text alone
+
 _No new tasks from Pass 6 (Responsive and Accessibility)._
-
-## GSTACK REVIEW REPORT
-
-| Review | Trigger | Why | Runs | Status | Findings |
-|--------|---------|-----|------|--------|----------|
-| CEO Review | `/plan-ceo-review` | Scope & strategy | 0 | — | — |
-| Codex Review | `/codex review` | Independent 2nd opinion | 0 | — | Codex unavailable on this machine |
-| Eng Review | `/plan-eng-review` | Architecture & tests (required) | 0 | — | — |
-| Design Review | `/plan-design-review` | UI/UX gaps | 1 | clean | score: 5/10 → 8/10, 5 decisions, 7 tasks |
-| DX Review | `/plan-devex-review` | Developer experience gaps | 0 | — | — |
-
-- **VERDICT:** DESIGN CLEARED — eng review required before the panel rebuild lands.
-
-NO UNRESOLVED DECISIONS
 
 ## Whole-app flow review (added 2026-09-08 after the panel review; requested because the overall layout and setup were not convincing)
 
@@ -268,3 +263,49 @@ first run                     | darktable's own welcome + lighttable        | un
 
 Everything a birder does not use stays one click away in the module
 visibility menu; nothing is removed from the application.
+
+Verified on screen (2026-09-08): the lighttable's right panel reads
+identify birds, selection, metadata editor, tagging, geotagging, export;
+the hidden modules are gone; the darkroom opens on the "workflow: birds"
+groups with color balance, color equalizer and color calibration in the
+color tab; stars show on filmstrip thumbnails without hovering.
+
+### Decision: the map's tiles (2026-09-08, revised after testing)
+
+The OpenStreetMap cartography was the one screen that looked like another
+product. osm-gps-map takes any raster tile URL, so the map settings
+module gains a first entry:
+
+```
+PROVIDER                                  | TILES                                        | KEY          | FOLLOWS THEME
+------------------------------------------|----------------------------------------------|--------------|--------------
+Mapbox (your token, follows the theme)    | mapbox/dark-v11 under dark, light-v11 under  | user's token | yes
+                                          | light; styles configurable                   |              |
+OpenStreetMap (default without a token),  | osm-gps-map built-ins                        | none         | no
+OpenTopoMap, ...                          |                                              |              |
+```
+
+Tried and rejected: CARTO basemaps as a key-less quiet default (they now
+watermark every tile "API KEY REQUIRED"); OpenFreeMap (vector tiles only,
+which osm-gps-map cannot draw); Google (tiles licensed only through
+Google's SDKs). The token is the user's own (Mapbox terms), entered in
+map settings and stored in the configuration; never in the repository or
+the log. osm-gps-map's tile URI is construct-only, so a provider change
+applies at the next start; the module says so. Verified: Mapbox dark and
+light tiles render around the Bjerkreim frames in both themes.
+Attribution for Mapbox tiles is task T8. digiKam for
+comparison uses Marble with an "Atlas" theme (muted) or the same OSM tiles.
+
+## GSTACK REVIEW REPORT
+
+| Review | Trigger | Why | Runs | Status | Findings |
+|--------|---------|-----|------|--------|----------|
+| CEO Review | `/plan-ceo-review` | Scope & strategy | 0 | — | — |
+| Codex Review | `/codex review` | Independent 2nd opinion | 0 | — | Codex unavailable on this machine |
+| Eng Review | `/plan-eng-review` | Architecture & tests (required) | 1 | paused | Step 0 only; paused for the whole-app flow review |
+| Design Review | `/plan-design-review` | UI/UX gaps | 1 | clean | score: 5/10 → 8/10, 8 decisions (panel, states, journey, DESIGN.md, models, workspace, map tiles, light theme audit), 9 tasks |
+| DX Review | `/plan-devex-review` | Developer experience gaps | 0 | — | — |
+
+- **VERDICT:** DESIGN CLEARED — eng review required before T1–T4 land.
+
+NO UNRESOLVED DECISIONS
