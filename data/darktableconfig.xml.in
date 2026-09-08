@@ -4058,6 +4058,27 @@
     <longdescription>path to a text file with one eBird species name per line; only those species are candidates. empty means every species the model knows</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/lighttable/ibis_identify/ebird_api_key</name>
+    <type>string</type>
+    <default></default>
+    <shortdescription>identify birds: eBird API key</shortdescription>
+    <longdescription>used to ask eBird which species occur where the frames were taken. free at ebird.org/api/keygen</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/ibis_identify/country</name>
+    <type>string</type>
+    <default></default>
+    <shortdescription>identify birds: fallback country</shortdescription>
+    <longdescription>two-letter country code used as the region when no frame has a position</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/ibis_identify/auto_region</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>identify birds: limit candidates to the region</shortdescription>
+    <longdescription>ask eBird for the species of the region the frames were taken in and only consider those</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/lighttable/neural_restore/mark_output</name>
     <type>bool</type>
     <default>true</default>
