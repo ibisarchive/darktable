@@ -20,6 +20,7 @@
 #include "button.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "dtgtk/icontheme.h"
 #include <string.h>
 
 G_DEFINE_TYPE(GtkDarktableToggleButton, dtgtk_togglebutton, GTK_TYPE_TOGGLE_BUTTON);
@@ -123,7 +124,9 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
 
     void *icon_data = DTGTK_TOGGLEBUTTON(widget)->icon_data;
 
-    if(cwidth > 0 && cheight > 0)
+    /* Ibis Archive: a themed SVG replaces the cairo glyph when the icon set has one */
+    if(cwidth > 0 && cheight > 0
+       && !dtgtk_icon_theme_paint(DTGTK_TOGGLEBUTTON(widget)->icon, cr, startx, starty, cwidth, cheight, flags))
       DTGTK_TOGGLEBUTTON(widget)->icon(cr, startx, starty, cwidth, cheight, flags, icon_data);
   }
 

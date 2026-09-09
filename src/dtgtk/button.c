@@ -20,6 +20,7 @@
 #include "bauhaus/bauhaus.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "dtgtk/icontheme.h"
 #include <string.h>
 
 G_DEFINE_TYPE(GtkDarktableButton, dtgtk_button, GTK_TYPE_BUTTON)
@@ -129,7 +130,9 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
     cheight = round((float)cheight * (1.0 - (cmargin.top + cmargin.bottom) / 100.0f));
 
     void *icon_data = DTGTK_BUTTON(widget)->icon_data;
-    if(cwidth > 0 && cheight > 0)
+    /* Ibis Archive: a themed SVG replaces the cairo glyph when the icon set has one */
+    if(cwidth > 0 && cheight > 0
+       && !dtgtk_icon_theme_paint(DTGTK_BUTTON(widget)->icon, cr, startx, starty, cwidth, cheight, flags))
       DTGTK_BUTTON(widget)->icon(cr, startx, starty, cwidth, cheight, flags, icon_data);
   }
 

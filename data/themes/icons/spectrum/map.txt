@@ -1,0 +1,147 @@
+# Ibis Archive icon set: Adobe Spectrum 2 Workflow icons (Apache-2.0)
+#
+# one line per built-in glyph: <paint name>[:variant] = <SVG basename>
+# paint names are the dtgtk_cairo_paint_* functions without the prefix;
+# variants are up, down, left, right (arrow directions) and active.
+# a glyph left out of this file keeps its cairo drawing.
+# SVGs are copied in by tools/ibis/import_spectrum_icons.py.
+#
+# glyph size relative to the button box; Spectrum draws on a 20 px grid
+# with 2 px of air, the cairo glyphs fill about 80 percent of their box
+@scale 1.15
+
+# disclosure and direction
+solid_arrow:right = ChevronRight
+solid_arrow:down = ChevronDown
+solid_arrow:left = ChevronLeft
+solid_arrow:up = ChevronUp
+solid_arrow = ChevronRight
+arrow:right = ChevronRight
+arrow:down = ChevronDown
+arrow:left = ChevronLeft
+arrow:up = ChevronUp
+arrow = ChevronRight
+line_arrow:right = ChevronRight
+line_arrow:down = ChevronDown
+line_arrow:left = ChevronLeft
+line_arrow:up = ChevronUp
+line_arrow = ChevronRight
+triangle:right = ChevronRight
+triangle:down = ChevronDown
+triangle:left = ChevronLeft
+triangle:up = ChevronUp
+triangle = ChevronDown
+solid_triangle:right = ChevronRight
+solid_triangle:down = ChevronDown
+solid_triangle:left = ChevronLeft
+solid_triangle:up = ChevronUp
+solid_triangle = ChevronDown
+dropdown = ChevronDown
+
+# module headers
+presets = MenuHamburger
+reset = Revert
+multiinstance = Duplicate
+showmask = Mask
+# switch, switch_on, switch_off, switch_inactive, switch_deprecated:
+# Spectrum 2 has no power glyph; the cairo one stays until a choice is made
+
+# top and bottom bars
+preferences = Settings
+help = HelpCircle
+info = InfoCircle
+shortcut = Keyboard
+grouping = Group
+overlays = Properties
+filtering_menu = Filter
+sortby = Sort
+sorting = Sort
+sorting:up = SortUp
+sorting:down = SortDown
+lt_mode_grid = ViewGrid
+lt_mode_zoom = ViewGridFluid
+lt_mode_culling_fixed = Compare
+lt_mode_culling_dynamic = Images
+lt_mode_fullpreview = FullScreen
+zoom = ZoomIn
+focus_peaking = Target
+grid = GridTypeLines
+overexposed = Exposure
+rawoverexposed = CameraProperties
+softproof = Print
+display = DeviceDesktop
+display2 = DeviceMultiscreen
+bulb = Lightbulb
+bulb_mod = Lightbulb
+warning = AlertTriangle
+messages = Comment
+
+# general controls
+store = SaveFloppy
+cancel = Close
+remove = Delete
+multiply_small = Close
+plus = AddCircle
+square_plus = Add
+plus_simple = Add
+minus_simple = RemoveCircle
+plusminus = AddCircle
+plusminus:active = RemoveCircle
+check_mark = Checkmark
+refresh = Refresh
+directory = Folder
+filmstrip = Filmstrip
+timer = Clock
+clock = Clock
+lock = Lock
+pin = PinOn
+link = Link
+treelist = ListBulleted
+invert = Invert
+color = Color
+colorpicker = Eyedropper
+colorpicker_set_values = Eyedropper
+eye = Visibility
+eye_toggle = Visibility
+eye_toggle:active = VisibilityOff
+masks_eye = Visibility
+flip = FlipHorizontal
+flip:up = FlipVertical
+flip:down = FlipVertical
+aspectflip = RotateOrientation
+perspective = TransformPerspective
+structure = GridsAndRulers
+draw_structure = GridsAndRulers
+rect_landscape = OrientationLandscape
+rect_portrait = OrientationPortrait
+polygon = Polygon5
+camera = Camera
+map_pin = Location
+tags = Tag
+audio = AudioWave
+local_copy = Copy
+altered = History
+styles = Effects
+paste_forms = Paste
+cut_forms = Cut
+snapshots_restore = Undo
+wand = MagicWand
+compass_star = MagicWand
+auto_levels = MagicWand
+
+# darkroom module groups
+modulegroup_active = Toggle
+modulegroup_favorites = Star
+modulegroup_basics = Properties
+modulegroup_basic = Exposure
+modulegroup_tone = BrightnessContrast
+modulegroup_color = Color
+modulegroup_correct = Tools
+modulegroup_effect = Effects
+modulegroup_grading = ColorFill
+modulegroup_technical = PluginGear
+
+# kept as cairo drawings, each a family of its own:
+# star, unratestar, reject, label*, alignment, text_label (they carry
+# color or text), the histogram scopes, the mask shapes and set operators,
+# the retouch tools, empty

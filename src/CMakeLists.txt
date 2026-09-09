@@ -137,6 +137,7 @@ FILE(GLOB SOURCE_FILES
   "develop/preview_data.c"
   "develop/tiling.c"
   "dtgtk/button.c"
+  "dtgtk/icontheme.c"
   "dtgtk/culling.c"
   "dtgtk/drawingarea.c"
   "dtgtk/expander.c"

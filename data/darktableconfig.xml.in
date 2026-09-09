@@ -2505,6 +2505,13 @@
     <shortdescription>draw the window title bar in the theme (Windows)</shortdescription>
     <longdescription>Ibis Archive: use a client-side title bar so the window frame follows the dark or light theme. needs a restart</longdescription>
   </dtconfig>
+  <dtconfig prefs="general" section="general">
+    <name>ui/icon_theme</name>
+    <type>string</type>
+    <default>spectrum</default>
+    <shortdescription>icon set</shortdescription>
+    <longdescription>Ibis Archive: the SVG icon set under themes/icons that replaces the built-in glyphs. leave empty for the built-in glyphs. needs a restart</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/1/timeline_visible</name>
     <type>bool</type>

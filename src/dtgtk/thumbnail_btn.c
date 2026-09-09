@@ -18,6 +18,7 @@
 #include "common/gdk_event_utils.h"
 #include "thumbnail_btn.h"
 #include "gui/gtk.h"
+#include "dtgtk/icontheme.h"
 #include <string.h>
 
 G_DEFINE_TYPE(GtkDarktableThumbnailBtn, dtgtk_thumbnail_btn, GTK_TYPE_DRAWING_AREA);
@@ -86,9 +87,11 @@ static gboolean _thumbnail_btn_draw(GtkWidget *widget, cairo_t *cr)
     const float icon_y = padding.top * allocation.height / 100.0f;
     const float icon_w = allocation.width - (padding.left + padding.right) * allocation.width / 100.0f;
     const float icon_h = allocation.height - (padding.top + padding.bottom) * allocation.height / 100.0f;
-    DTGTK_THUMBNAIL_BTN(widget)->icon(
-        cr, icon_x, icon_y, icon_w, icon_h, flags,
-        DTGTK_THUMBNAIL_BTN(widget)->icon_data ? DTGTK_THUMBNAIL_BTN(widget)->icon_data : bg_color);
+    /* Ibis Archive: a themed SVG replaces the cairo glyph when the icon set has one */
+    if(!dtgtk_icon_theme_paint(DTGTK_THUMBNAIL_BTN(widget)->icon, cr, icon_x, icon_y, icon_w, icon_h, flags))
+      DTGTK_THUMBNAIL_BTN(widget)->icon(
+          cr, icon_x, icon_y, icon_w, icon_h, flags,
+          DTGTK_THUMBNAIL_BTN(widget)->icon_data ? DTGTK_THUMBNAIL_BTN(widget)->icon_data : bg_color);
   }
   // and eventually the image border
   cairo_restore(cr);

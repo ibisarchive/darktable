@@ -8,6 +8,9 @@ endif(USE_OPENCL)
 FILE(GLOB THEME_FILES "themes/*.css")
 FILE(COPY ${THEME_FILES} DESTINATION "${DARKTABLE_DATADIR}/themes")
 install(FILES ${THEME_FILES} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/themes COMPONENT DTApplication)
+# Ibis Archive: SVG icon sets, themes/icons/<set>/{map.txt,*.svg}
+FILE(COPY "themes/icons" DESTINATION "${DARKTABLE_DATADIR}/themes")
+install(DIRECTORY "themes/icons" DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/themes COMPONENT DTApplication)
 
 #
 # web gallery export support files:
