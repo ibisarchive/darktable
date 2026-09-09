@@ -1541,6 +1541,28 @@ static const struct wl_registry_listener reg_listener = {
 #endif
 
 // does display server suport windows with server-side decorations (SSD)?
+/* Ibis Archive: the window icon is the bare bird, white on dark themes and
+   black on light ones, from data/pixmaps; falls back to the icon theme */
+static void _ibis_set_window_icon(GtkWindow *window)
+{
+  gchar *theme = dt_conf_get_string("ui_last/theme");
+  const gboolean light = theme && strstr(theme, "light");
+  g_free(theme);
+  char datadir[PATH_MAX] = { 0 };
+  dt_loc_get_datadir(datadir, sizeof(datadir));
+  gchar *path = g_build_filename(datadir, "pixmaps",
+                                 light ? "ibis-window-light.png" : "ibis-window-dark.png", NULL);
+  GdkPixbuf *icon = gdk_pixbuf_new_from_file(path, NULL);
+  if(icon)
+  {
+    gtk_window_set_icon(window, icon);
+    g_object_unref(icon);
+  }
+  else
+    gtk_window_set_icon_name(window, "darktable");
+  g_free(path);
+}
+
 static gboolean _check_ssd_support(void)
 {
 #ifdef GDK_WINDOWING_WAYLAND
@@ -1559,11 +1581,7 @@ static gboolean _check_ssd_support(void)
   else
 #endif
   {
-    // X11, MacOS, and Windows can handle SSD; Ibis prefers its own dark
-    // title bar on Windows so the frame follows the theme (ui/csd_titlebar)
-#ifdef _WIN32
-    if(dt_conf_get_bool("ui/csd_titlebar")) return FALSE;
-#endif
+    // X11, MacOS, and Windows can handle SSD
     return TRUE;
   }
 }
@@ -2401,7 +2419,7 @@ static void _init_widgets(dt_gui_gtk_t *gui)
   // allows for proper window resizing
   gtk_window_set_type_hint(GTK_WINDOW(widget), GDK_WINDOW_TYPE_HINT_NORMAL);
 
-  gtk_window_set_icon_name(GTK_WINDOW(widget), "darktable");
+  _ibis_set_window_icon(GTK_WINDOW(widget));
   gtk_window_set_title(GTK_WINDOW(widget), "Ibis Archive");
 
   g_signal_connect(G_OBJECT(widget), "delete_event",
@@ -3614,7 +3632,20 @@ static void _ui_init_panel_center_top(dt_ui_t *ui,
   gtk_widget_set_name(widget, "header-toolbar");
   dt_gui_add_class(widget, "dt_big_btn_canvas");
 
-  gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
+  /* Ibis Archive: one top row. the toolbar joins the header between the
+     brand mark and the view switcher and the hinter gives up its width, so
+     the filter bar and the global tools share the row (ui/combined_toolbar) */
+  GtkWidget *top = ui->panels[DT_UI_PANEL_TOP];
+  if(top && dt_conf_get_bool("ui/combined_toolbar"))
+  {
+    gtk_widget_set_valign(widget, GTK_ALIGN_CENTER);
+    gtk_box_pack_start(GTK_BOX(top), widget, TRUE, TRUE, 0);
+    gtk_box_reorder_child(GTK_BOX(top), widget, 1);
+    gtk_box_set_child_packing(GTK_BOX(top), ui->containers[DT_UI_CONTAINER_PANEL_TOP_CENTER],
+                              FALSE, FALSE, DT_UI_PANEL_MODULE_SPACING, GTK_PACK_START);
+  }
+  else
+    gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
 
   /* add container for center top left */
   ui->containers[DT_UI_CONTAINER_PANEL_CENTER_TOP_LEFT] =
@@ -3809,7 +3840,7 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title,
   // themes not yet loaded, no CSS add some manual padding
   const int padding = darktable.themes ? 0 : 5;
 
-  gtk_window_set_icon_name(GTK_WINDOW(window), "darktable");
+  _ibis_set_window_icon(GTK_WINDOW(window));
   gtk_window_set_title(GTK_WINDOW(window), title);
   GMainLoop *loop = g_main_loop_new(NULL, FALSE);
   g_signal_connect_swapped(window, "destroy", G_CALLBACK(g_main_loop_quit), loop);
@@ -3904,7 +3935,7 @@ char *dt_gui_show_standalone_string_dialog(const char *title,
   dt_osx_disallow_fullscreen(window);
 #endif
 
-  gtk_window_set_icon_name(GTK_WINDOW(window), "darktable");
+  _ibis_set_window_icon(GTK_WINDOW(window));
   gtk_window_set_title(GTK_WINDOW(window), title);
   GMainLoop *loop = g_main_loop_new(NULL, FALSE);
   g_signal_connect_swapped(window, "destroy", G_CALLBACK(g_main_loop_quit), loop);

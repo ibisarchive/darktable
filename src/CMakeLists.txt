@@ -1239,7 +1239,9 @@ endif(APPLE)
 target_link_libraries(darktable lib_darktable)
 
 if (WIN32)
-  set_target_properties(darktable PROPERTIES LINK_FLAGS "-mconsole -mwindows -Wl,-subsystem,console")
+  # Ibis Archive: a GUI subsystem executable, so no console window opens at
+  # launch; stdout still goes to Documents/Darktable/darktable-log.txt (main.c)
+  set_target_properties(darktable PROPERTIES LINK_FLAGS "-mwindows -Wl,-subsystem,windows")
   _detach_debuginfo (darktable bin)
   _detach_debuginfo (lib_darktable bin)
 else()

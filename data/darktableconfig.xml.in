@@ -2499,18 +2499,18 @@
     <longdescription>Ibis Archive: side panels sized like Lightroom, about 300 logical pixels; stored per view and layout by darktable</longdescription>
   </dtconfig>
   <dtconfig prefs="general" section="general">
-    <name>ui/csd_titlebar</name>
-    <type>bool</type>
-    <default>true</default>
-    <shortdescription>draw the window title bar in the theme (Windows)</shortdescription>
-    <longdescription>Ibis Archive: use a client-side title bar so the window frame follows the dark or light theme. needs a restart</longdescription>
-  </dtconfig>
-  <dtconfig prefs="general" section="general">
     <name>ui/icon_theme</name>
     <type>string</type>
     <default>spectrum</default>
     <shortdescription>icon set</shortdescription>
     <longdescription>Ibis Archive: the SVG icon set under themes/icons that replaces the built-in glyphs. leave empty for the built-in glyphs. needs a restart</longdescription>
+  </dtconfig>
+  <dtconfig prefs="general" section="general">
+    <name>ui/combined_toolbar</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>one top row</shortdescription>
+    <longdescription>Ibis Archive: put the filter bar and the global tools in the header row next to the brand mark and the view switcher instead of a second row. needs a restart</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/1/timeline_visible</name>

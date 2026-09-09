@@ -29,8 +29,10 @@ The core stays upstream's. Fork code lives in:
 Core files touched, deliberately and minimally (keep this list honest):
 
 - `src/gui/gtk.c`: the window title strings ("darktable" -> "Ibis Archive");
-  client-side title bar on Windows behind `ui/csd_titlebar` so the frame
-  follows the theme
+  one top row behind `ui/combined_toolbar` (the filter bar and global tools
+  join the header between the brand mark and the view switcher). the title
+  bar stays server-side: upstream already colors the Windows caption from
+  the theme through DWM, and a client-side bar loses the resize borders
 - `src/gui/preferences.c`, `src/libs/tools/darktable.c`: dialog title and
   about name ("darktable" -> "Ibis Archive"); the top panel no longer prints
   the version string (it stays in the about dialog), only a workspace label
