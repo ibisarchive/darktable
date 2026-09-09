@@ -90,6 +90,7 @@ DT_MODULE(1)
 // the classifier's runners-up, kept as internal tags (darktable| tags are
 // neither exported nor shown in the tag tree): darktable|ibis|candidate|<rank>|<name>|<percent>
 #define CAND_ROOT     "darktable|ibis|candidate|"
+#define TAG_OUTSIDE   "darktable|ibis|outside region list"
 #define N_CANDIDATES  3
 
 #define EBIRD_API     "https://api.ebird.org/v2"
@@ -700,20 +701,31 @@ typedef struct dt_ibis_models_t
   gboolean embedding;
   int clf_side;              // input side: 300 for the fixed head, 224 for CLIP
   float *text_embeds;        // n_labels x n_out, L2-normalised rows
-  float *probs;              // n_labels, filled per frame
+  float *probs;              // n_labels, filled per frame: among the birds that occur here
+  float *probs_all;          // n_labels, the same frame against every species in the world
   float logit_scale;
   int n_labels;
   const guint8 *allowed;     // n_labels mask from the region list, or NULL
 } dt_ibis_models_t;
 
+// the region list is only a prior. a frame with no position falls back to
+// the country in the settings, and a vagrant or a travel photo is not on the
+// list either. when the world's best species is not on the list, is this
+// sure on its own, and nothing on the list gets this much support
+// worldwide, the world answer stands and the frame is marked
+#define OVERRIDE_WORLD_MIN 0.5f
+#define OVERRIDE_REGION_MAX 0.05f
+
 // returns the winning label index, or -1; *score gets its probability,
 // *det_conf the detector's confidence (0 when no box was used); top[] and
-// top_score[] get the N_CANDIDATES best (index -1 past the end)
+// top_score[] get the N_CANDIDATES best (index -1 past the end); *outside
+// is set when the region list was overruled by the world answer
 static int _classify(dt_ibis_models_t *m, const dt_imgid_t imgid, float *score, float *det_conf,
-                     int *top, float *top_score)
+                     int *top, float *top_score, gboolean *outside)
 {
   for(int k = 0; k < N_CANDIDATES; k++) { top[k] = -1; top_score[k] = 0.0f; }
   *det_conf = 0.0f;
+  *outside = FALSE;
   dt_mipmap_buffer_t buf;
   // a bird can be a few percent of the frame; the detector needs pixels
   const dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(2 * DET_SIDE, 2 * DET_SIDE);
@@ -750,32 +762,61 @@ static int _classify(dt_ibis_models_t *m, const dt_imgid_t imgid, float *score, 
   int n = m->n_out;
   if(m->embedding)
   {
-    // cosine similarity against every species, scaled and softmaxed;
-    // species outside the region mask are left out of the softmax so
-    // the probability is "among the birds that occur here"
+    // cosine similarity against every species, scaled and softmaxed over
+    // the world (probs_all); the region answer (probs) is the same
+    // distribution renormalized over the birds that occur here, so its
+    // probability reads "among the birds that occur here"
     const int d = m->n_out;
+    const int nl = m->n_labels;
     float norm = 0.0f;
     for(int k = 0; k < d; k++) norm += m->clf_out[k] * m->clf_out[k];
     norm = sqrtf(MAX(norm, 1e-12f));
     float maxl = -1e30f;
-    for(int i = 0; i < m->n_labels; i++)
+    for(int i = 0; i < nl; i++)
     {
-      if(m->allowed && !m->allowed[i]) { m->probs[i] = -1e30f; continue; }
       const float *t = m->text_embeds + (size_t)i * d;
       float dot = 0.0f;
       for(int k = 0; k < d; k++) dot += m->clf_out[k] * t[k];
-      m->probs[i] = m->logit_scale * dot / norm;
-      maxl = MAX(maxl, m->probs[i]);
+      m->probs_all[i] = m->logit_scale * dot / norm;
+      maxl = MAX(maxl, m->probs_all[i]);
     }
     float sum = 0.0f;
-    for(int i = 0; i < m->n_labels; i++)
+    for(int i = 0; i < nl; i++)
     {
-      m->probs[i] = (m->probs[i] <= -1e29f) ? 0.0f : expf(m->probs[i] - maxl);
-      sum += m->probs[i];
+      m->probs_all[i] = expf(m->probs_all[i] - maxl);
+      sum += m->probs_all[i];
     }
-    for(int i = 0; i < m->n_labels; i++) m->probs[i] /= MAX(sum, 1e-12f);
+    for(int i = 0; i < nl; i++) m->probs_all[i] /= MAX(sum, 1e-12f);
+
+    if(m->allowed)
+    {
+      int world_best = 0;
+      float region_support = 0.0f; // the most any listed species gets worldwide
+      sum = 0.0f;
+      for(int i = 0; i < nl; i++)
+      {
+        if(m->probs_all[i] > m->probs_all[world_best]) world_best = i;
+        m->probs[i] = m->allowed[i] ? m->probs_all[i] : 0.0f;
+        sum += m->probs[i];
+        if(m->allowed[i]) region_support = MAX(region_support, m->probs_all[i]);
+      }
+      if(!m->allowed[world_best]
+         && m->probs_all[world_best] >= OVERRIDE_WORLD_MIN
+         && region_support < OVERRIDE_REGION_MAX)
+      {
+        // nothing on the list comes close: a bird from elsewhere
+        memcpy(m->probs, m->probs_all, sizeof(float) * nl);
+        *outside = TRUE;
+        dt_print(DT_DEBUG_AI, "[ibis_identify] image %d: not on the region list (world %.2f, list %.3f)",
+                 imgid, m->probs_all[world_best], region_support);
+      }
+      else
+        for(int i = 0; i < nl; i++) m->probs[i] /= MAX(sum, 1e-12f);
+    }
+    else
+      memcpy(m->probs, m->probs_all, sizeof(float) * nl);
     probs = m->probs;
-    n = m->n_labels;
+    n = nl;
   }
   else if(m->allowed)
   {
@@ -805,17 +846,22 @@ static int _classify(dt_ibis_models_t *m, const dt_imgid_t imgid, float *score, 
 
 // replace the frame's candidate tags with this run's runners-up
 static void _store_candidates(const dt_imgid_t imgid, char **labels, const int n_labels,
-                              const int *top, const float *top_score)
+                              const int *top, const float *top_score, const gboolean outside)
 {
   GList *old = NULL;
   dt_tag_get_attached(imgid, &old, FALSE);
   for(GList *t = old; t; t = g_list_next(t))
   {
     const dt_tag_t *tag = t->data;
-    if(tag->tag && g_str_has_prefix(tag->tag, CAND_ROOT))
+    if(tag->tag && (g_str_has_prefix(tag->tag, CAND_ROOT) || !strcmp(tag->tag, TAG_OUTSIDE)))
       dt_tag_detach(tag->id, imgid, FALSE, FALSE);
   }
   dt_tag_free_result(&old);
+  if(outside)
+  {
+    guint id = 0;
+    if(dt_tag_new(TAG_OUTSIDE, &id)) dt_tag_attach(id, imgid, FALSE, FALSE);
+  }
   for(int k = 0; k < N_CANDIDATES; k++)
   {
     if(top[k] < 0 || top[k] >= n_labels) break;
@@ -948,6 +994,7 @@ static int32_t _job_run(dt_job_t *job)
     m.text_embeds = dt_alloc_align_float((size_t)n_labels * m.n_out);
     memcpy(m.text_embeds, raw, len);
     m.probs = dt_alloc_align_float((size_t)n_labels);
+    m.probs_all = dt_alloc_align_float((size_t)n_labels);
     g_free(raw); g_free(path); g_free(file);
   }
   else if(m.n_out != n_labels)
@@ -1035,8 +1082,9 @@ static int32_t _job_run(dt_job_t *job)
     float score = 0.0f, det_conf = 0.0f;
     int top[N_CANDIDATES];
     float top_score[N_CANDIDATES];
-    const int best = _classify(&m, imgid, &score, &det_conf, top, top_score);
-    if(best >= 0) _store_candidates(imgid, labels, n_labels, top, top_score);
+    gboolean outside = FALSE;
+    const int best = _classify(&m, imgid, &score, &det_conf, top, top_score, &outside);
+    if(best >= 0) _store_candidates(imgid, labels, n_labels, top, top_score, outside);
     if(best < 0)
     {
       dt_print(DT_DEBUG_ALWAYS, "[ibis_identify] image %d: no result (thumbnail or model run failed)", imgid);
@@ -1097,6 +1145,7 @@ static int32_t _job_run(dt_job_t *job)
   dt_free_align(m.det_out);
   dt_free_align(m.text_embeds);
   dt_free_align(m.probs);
+  dt_free_align(m.probs_all);
   g_free(allowed);
   if(m.det) dt_ai_unload_model(m.det);
   g_strfreev(labels);
@@ -1231,13 +1280,16 @@ static void _review_update(dt_lib_module_t *self)
   char *species = NULL;
   char *cand[N_CANDIDATES] = { NULL };
   int pct[N_CANDIDATES] = { 0 };
+  gboolean outside = FALSE;
   GList *tags = NULL;
   dt_tag_get_attached(imgid, &tags, FALSE);
   for(GList *t = tags; t; t = g_list_next(t))
   {
     const dt_tag_t *tag = t->data;
     if(!tag->tag) continue;
-    if(g_str_has_prefix(tag->tag, TAG_ROOT) && !species)
+    if(!strcmp(tag->tag, TAG_OUTSIDE))
+      outside = TRUE;
+    else if(g_str_has_prefix(tag->tag, TAG_ROOT) && !species)
       species = g_strdup(tag->tag + strlen(TAG_ROOT));
     else if(g_str_has_prefix(tag->tag, CAND_ROOT))
     {
@@ -1255,8 +1307,9 @@ static void _review_update(dt_lib_module_t *self)
   dt_tag_free_result(&tags);
 
   const dt_image_t *img = dt_image_cache_get(imgid, 'r');
-  char *title = g_strdup_printf("%s: %s", img ? img->filename : "?",
-                                species ? species : _("no species"));
+  char *title = g_strdup_printf("%s: %s%s", img ? img->filename : "?",
+                                species ? species : _("no species"),
+                                outside ? _(" (not on the region list)") : "");
   if(img) dt_image_cache_read_release(img);
   gtk_label_set_text(GTK_LABEL(d->review_title), title);
   g_free(title);
