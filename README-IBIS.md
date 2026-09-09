@@ -29,10 +29,19 @@ The core stays upstream's. Fork code lives in:
 Core files touched, deliberately and minimally (keep this list honest):
 
 - `src/gui/gtk.c`: the window title strings ("darktable" -> "Ibis Archive");
-  one top row behind `ui/combined_toolbar` (the filter bar and global tools
-  join the header between the brand mark and the view switcher). the title
-  bar stays server-side: upstream already colors the Windows caption from
-  the theme through DWM, and a client-side bar loses the resize borders
+  the themed window icon; `ui/combined_toolbar` (off by default) folds the
+  filter row into the header. the title bar stays server-side: upstream
+  already colors the Windows caption from the theme through DWM, and a
+  client-side bar loses the resize borders
+- top bar like Lightroom's (2026-09-09): `src/libs/tools/filter.c` adds a
+  `header-search-box` in the header centre and offers it through the view
+  proxy (`src/views/view.h`, `view.c`); `src/libs/filtering.c` routes a
+  pinned text search rule there; `src/libs/filters/search.c` widens the
+  header entry and gives it the prompt "search all photos";
+  `src/libs/tools/global_toolbox.c` moves to the header row (container
+  TOP_RIGHT, position 1000, widget name `global-toolbox`); defaults pin
+  rating (33), colour labels (18) and text search (34) in
+  `data/darktableconfig.xml.in`. the hinter is hidden by the workspace
 - `src/gui/preferences.c`, `src/libs/tools/darktable.c`: dialog title and
   about name ("darktable" -> "Ibis Archive"); the top panel no longer prints
   the version string (it stays in the about dialog), only a workspace label
@@ -69,6 +78,37 @@ tools, and the module power switch (Spectrum 2 has no power glyph).
 
 Windows gotcha: a function pointer taken inside a plugin DLL is an import
 thunk, so `icontheme.c` follows `jmp [rip+disp32]` before comparing.
+
+## Design tokens
+
+`data/ibis/design/spectrum-tokens.json` is the curated, resolved subset of
+Adobe Spectrum's design tokens (`@adobe/spectrum-tokens`, Apache-2.0) that
+the themes and DESIGN.md quote. `tools/ibis/spectrum_tokens.py` regenerates
+it and the two theme chunks `data/themes/chunk-spectrum-{dark,light}.css`
+(GTK `@define-color spectrum_<token>` names) from an unpacked npm package.
+`ibis-dark.css` builds its grey ramp from those tokens; the light theme
+keeps its warm paper ramp by decision. Add a token to CURATED in the script
+when a theme rule needs it.
+
+## Region prior in identify birds
+
+The eBird region list (from the frames' position, else the country in the
+settings) is a prior, not a filter. The classifier softmaxes over the world
+first; when the world's best species is not on the list, is at least 50
+percent sure, and nothing on the list gets 5 percent worldwide, the world
+answer stands, the frame gets `darktable|ibis|outside region list`, and the
+review title says so. Thresholds are OVERRIDE_WORLD_MIN and
+OVERRIDE_REGION_MAX in `src/libs/ibis_identify.c`. Checked 2026-09-09 on 36
+stock photos from six continents with the country set to Norway: 31 named
+correctly at 85 percent or more, the toucan among them.
+
+## Running the development build on Windows
+
+`darktable.exe` is linked as a GUI program (no console). The MSYS2 runtime
+is not bundled, so the launcher sets PATH: `Ibis Archive.vbs` in the config
+dir starts the exe with `--configdir`/`--cachedir` and no window, and the
+Desktop shortcut points at it with `ibis.ico`. The stock darktable 5.6.1
+install and its library are never touched.
 
 ## Models
 

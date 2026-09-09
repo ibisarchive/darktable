@@ -202,8 +202,6 @@ button
 #footer-toolbar .dt_module_btn:hover { opacity: 1; }
 
 /* color circles in the filter bar */
-#filter-colors-box { opacity: 0.5; }
-#filter-colors-box:hover { opacity: 1; }
 
 /* cell chrome (format badge, group, altered) only on hover; stars stay */
 /* the badges are cairo-painted with the CSS color, so hide them by color, not opacity */
@@ -281,3 +279,52 @@ button
   color: transparent;
   background-color: transparent;
 }
+
+/* top bars like Lightroom's (measured 2026-09-09): a 44 px header row with
+   the search field in the middle and the icon cluster plus view switcher at
+   the right, then a 40 px filter row whose groups are separated by
+   hairlines. sizes: component-height-200 / -100, corner-radius-100 */
+#top-hinter
+{
+  min-height: 44px;
+  padding: 0 12px;
+}
+#header-search-box entry
+{
+  min-width: 36em;
+  min-height: 32px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 4px;
+  background-color: @grey_10;
+  color: @fg_b;
+}
+#header-search-box entry:focus { color: @fg_a; }
+#header-toolbar
+{
+  min-height: 40px;
+  padding: 0 8px;
+  border-top: 1px solid @border_color;
+}
+#header-rule-box > box
+{
+  padding: 0 12px;
+  border-left: 1px solid @border_color;
+}
+#header-rule-box > box:first-child { border-left: none; }
+#header-sort-box { padding: 0 12px; border-left: 1px solid @border_color; }
+
+/* header row icon cluster: Lightroom spaces its icons about a glyph apart */
+#global-toolbox { margin-right: 20px; }
+#global-toolbox .dt_module_btn
+{
+  margin: 0 6px;
+  min-width: 20px;
+  min-height: 20px;
+  opacity: 0.6;
+}
+#global-toolbox .dt_module_btn:hover { opacity: 1; }
+/* the colour labels in the filter row keep their colours; the toolbar's
+   level-C dimming does not apply to them */
+#filter-colors-box { opacity: 1; }
+#header-toolbar #filter-colors-box .dt_module_btn { opacity: 0.9; }

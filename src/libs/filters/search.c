@@ -173,7 +173,12 @@ static void _search_widget_init(dt_lib_filtering_rule_t *rule, const dt_collecti
   g_signal_connect(G_OBJECT(search->text), "search-changed", G_CALLBACK(_search_changed), search);
   g_signal_connect(G_OBJECT(search->text), "stop-search", G_CALLBACK(_search_reset_text_entry), rule);
   if(top)
-    gtk_entry_set_max_width_chars(GTK_ENTRY(search->text), 20);
+  {
+    /* Ibis Archive: in the header row the search reads like Lightroom's
+       field: wide, with a prompt */
+    gtk_entry_set_max_width_chars(GTK_ENTRY(search->text), 48);
+    gtk_entry_set_placeholder_text(GTK_ENTRY(search->text), _("search all photos"));
+  }
   gtk_entry_set_width_chars(GTK_ENTRY(search->text), 0);
   gtk_widget_set_tooltip_text(search->text,
                               /* xgettext:no-c-format */

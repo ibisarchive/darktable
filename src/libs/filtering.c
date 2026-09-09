@@ -1061,15 +1061,21 @@ static void _topbar_update(dt_lib_module_t *self)
 {
   dt_lib_filtering_t *d = self->data;
 
-  // first, we cleanup the filter box
+  // first, we cleanup the filter box (and, Ibis Archive, the header search box)
   GtkWidget *fbox = dt_view_filter_get_filters_box(darktable.view_manager);
-  GList *childrens = gtk_container_get_children(GTK_CONTAINER(fbox));
-  for(GList *l = childrens; l; l = g_list_next(l))
+  GtkWidget *sbox = dt_view_filter_get_search_box(darktable.view_manager);
+  for(int b = 0; b < 2; b++)
   {
-    g_object_ref(G_OBJECT(l->data));
-    gtk_container_remove(GTK_CONTAINER(fbox), GTK_WIDGET(l->data));
+    GtkWidget *box = b ? sbox : fbox;
+    if(!box) continue;
+    GList *childrens = gtk_container_get_children(GTK_CONTAINER(box));
+    for(GList *l = childrens; l; l = g_list_next(l))
+    {
+      g_object_ref(G_OBJECT(l->data));
+      gtk_container_remove(GTK_CONTAINER(box), GTK_WIDGET(l->data));
+    }
+    g_list_free(childrens);
   }
-  g_list_free(childrens);
 
   // and we add all the special widgets with a top structure
   int nb = 0;
@@ -1082,6 +1088,13 @@ static void _topbar_update(dt_lib_module_t *self)
       {
         _widget_init_special(&d->rule[i], d->rule[i].raw_text, self, TRUE);
         _widget_update(&d->rule[i]);
+      }
+      // Ibis Archive: the text search sits in the header row when that box exists
+      if(sbox && d->rule[i].prop == DT_COLLECTION_PROP_TEXTSEARCH)
+      {
+        gtk_box_pack_start(GTK_BOX(sbox), d->rule[i].w_special_box_top, TRUE, TRUE, 0);
+        gtk_widget_show_all(d->rule[i].w_special_box_top);
+        continue;
       }
       // we add the filter label if it's the first filter
       if(nb == 0)

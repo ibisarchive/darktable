@@ -69,7 +69,9 @@ dt_view_type_flags_t views(dt_lib_module_t *self)
 
 uint32_t container(dt_lib_module_t *self)
 {
-  return DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT;
+  /* Ibis Archive: in the header row, left of the view switcher, like the
+     icon cluster at the right of Lightroom's top bar */
+  return DT_UI_CONTAINER_PANEL_TOP_RIGHT;
 }
 
 gboolean expandable(dt_lib_module_t *self)
@@ -79,7 +81,7 @@ gboolean expandable(dt_lib_module_t *self)
 
 int position(const dt_lib_module_t *self)
 {
-  return 1001;
+  return 1000; // before the view switcher (1001)
 }
 
 static void _overlays_toggle_button(GtkWidget *w, dt_lib_module_t *self)
@@ -539,6 +541,7 @@ void gui_init(dt_lib_module_t *self)
 
   self->widget = dt_gui_hbox(d->grouping_button, d->overlays_button,
                              d->help_button, d->keymap_button, d->preferences_button);
+  gtk_widget_set_name(self->widget, "global-toolbox"); // Ibis Archive: spacing in the header row
 }
 
 void gui_cleanup(dt_lib_module_t *self)

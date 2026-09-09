@@ -17,7 +17,7 @@
 
 local dt = require "darktable"
 
-local WORKSPACE_VERSION = 2
+local WORKSPACE_VERSION = 3
 local PREF = "workspace_version"
 
 local LAYOUT = {
@@ -34,6 +34,8 @@ local LAYOUT = {
       neural_restore = false, recentcollect = false,
       -- bottom panel keeps the toolbar only
       timeline = false, script_manager = false,
+      -- the header row centre is the search field, not hover hints
+      hinter = false,
     },
     -- B open, C collapsed (solo mode keeps one open per side)
     expanded = {
@@ -48,7 +50,7 @@ local LAYOUT = {
       history = true, snapshots = true,
       neural_restore = false, duplicate = false, colorpicker = false, tagging = false,
       metadata_view = false, masks = false, export = false,
-      filter = false, script_manager = false,
+      filter = false, script_manager = false, hinter = false,
     },
     expanded = { history = false, snapshots = false },
   },
@@ -56,7 +58,7 @@ local LAYOUT = {
     visible = {
       location = true, geotagging = true, map_settings = true, collect = true,
       map_locations = false, tagging = false, filtering = false, metadata_view = false,
-      filter = false, script_manager = false,
+      filter = false, script_manager = false, hinter = false,
     },
     expanded = { location = true, geotagging = false, map_settings = false, collect = false },
   },

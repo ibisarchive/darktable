@@ -1228,6 +1228,12 @@ GtkWidget *dt_view_filter_get_filters_box(const dt_view_manager_t *vm)
     return vm->proxy.filter.get_filter_box(vm->proxy.filter.module);
   return NULL;
 }
+GtkWidget *dt_view_filter_get_search_box(const dt_view_manager_t *vm)
+{
+  if(vm->proxy.filter.module && vm->proxy.filter.get_search_box)
+    return vm->proxy.filter.get_search_box(vm->proxy.filter.module);
+  return NULL;
+}
 GtkWidget *dt_view_filter_get_sort_box(const dt_view_manager_t *vm)
 {
   if(vm->proxy.filter.module && vm->proxy.filter.get_sort_box)

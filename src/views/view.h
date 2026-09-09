@@ -281,6 +281,7 @@ typedef struct dt_view_manager_t
       struct dt_lib_module_t *module;
       GtkWidget *(*get_filter_box)(struct dt_lib_module_t *);
       GtkWidget *(*get_sort_box)(struct dt_lib_module_t *);
+      GtkWidget *(*get_search_box)(struct dt_lib_module_t *); // Ibis Archive
       GtkWidget *(*get_count)(struct dt_lib_module_t *);
     } filter;
 
@@ -548,6 +549,8 @@ void dt_view_filtering_reset(const dt_view_manager_t *vm,
 void dt_view_filtering_show_pref_menu(const dt_view_manager_t *vm, GtkWidget *bt);
 GtkWidget *dt_view_filter_get_filters_box(const dt_view_manager_t *vm);
 GtkWidget *dt_view_filter_get_sort_box(const dt_view_manager_t *vm);
+/* Ibis Archive: the header-row box for a pinned text search, or NULL */
+GtkWidget *dt_view_filter_get_search_box(const dt_view_manager_t *vm);
 GtkWidget *dt_view_filter_get_count(const dt_view_manager_t *vm);
 
 // active images functions

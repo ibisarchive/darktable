@@ -34,6 +34,7 @@ typedef struct dt_lib_tool_filter_t
 {
   GtkWidget *filter_box;
   GtkWidget *sort_box;
+  GtkWidget *search_box; // Ibis Archive: the text search rule, centered in the header row
   GtkWidget *count;
 } dt_lib_tool_filter_t;
 
@@ -73,6 +74,11 @@ static GtkWidget *_lib_filter_get_filter_box(dt_lib_module_t *self)
   dt_lib_tool_filter_t *d = self->data;
   return d->filter_box;
 }
+static GtkWidget *_lib_filter_get_search_box(dt_lib_module_t *self)
+{
+  dt_lib_tool_filter_t *d = self->data;
+  return d->search_box;
+}
 static GtkWidget *_lib_filter_get_sort_box(dt_lib_module_t *self)
 {
   dt_lib_tool_filter_t *d = self->data;
@@ -111,6 +117,16 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_name(d->filter_box, "header-rule-box");
   gtk_box_pack_start(GTK_BOX(self->widget), d->filter_box, FALSE, FALSE, 0);
 
+  /* Ibis Archive: a pinned text search rule goes to the middle of the header
+     row, like Lightroom's search field, instead of the filter row */
+  d->search_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(d->search_box, "header-search-box");
+  gtk_widget_set_halign(d->search_box, GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(d->search_box, GTK_ALIGN_CENTER);
+  gtk_widget_set_hexpand(d->search_box, TRUE);
+  dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_TOP_CENTER, d->search_box);
+  gtk_widget_show(d->search_box);
+
   /* sort combobox */
   d->sort_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_name(d->sort_box, "header-sort-box");
@@ -127,6 +143,7 @@ void gui_init(dt_lib_module_t *self)
   darktable.view_manager->proxy.filter.module = self;
   darktable.view_manager->proxy.filter.get_filter_box = _lib_filter_get_filter_box;
   darktable.view_manager->proxy.filter.get_sort_box = _lib_filter_get_sort_box;
+  darktable.view_manager->proxy.filter.get_search_box = _lib_filter_get_search_box;
   darktable.view_manager->proxy.filter.get_count = _lib_filter_get_count;
 
   // test if the filtering module is already load and update its gui in this case
