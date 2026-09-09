@@ -20,36 +20,44 @@
 
    built on darktable.css: the base defines every color as a token and
    styles widgets from the tokens, so this file sets tokens and a few
-   shapes. the surfaces follow the tonal order of Lightroom's dark UI,
-   measured from screenshots (IBIS-HIERARCHY.md): the canvas is the
-   darkest surface (#1c1c1c), panels and toolbars one step lighter
-   (#2d2d2d), inset sections between the two (#242424), hairlines #3f3f3f.
-   nothing behind a photo is brighter than the photo. */
+   shapes. the surfaces follow the tonal order of Lightroom's dark UI
+   (IBIS-HIERARCHY.md): the canvas is the darkest surface, panels and
+   toolbars one step lighter, inset sections between the two, hairlines
+   one more step. nothing behind a photo is brighter than the photo.
+
+   the grey values are Adobe Spectrum's dark neutral ramp
+   (chunk-spectrum-dark.css, generated from @adobe/spectrum-tokens by
+   tools/ibis/spectrum_tokens.py), which is what the new Lightroom is
+   built on: gray-50 #1b1b1b canvas, gray-100 #2c2c2c panels, gray-75
+   #222222 insets, gray-300 #393939 hairlines, gray-900 #f2f2f2 text.
+   steps Spectrum does not have are mixes of the neighbours. */
 
 @import url("darktable.css");
+@import url("chunk-spectrum-dark.css");
 
-/* neutral ramp; darktable.css names a few of these directly */
+/* neutral ramp on Spectrum's gray tokens; darktable.css names a few of
+   these directly */
 @define-color grey_00 #000000;
-@define-color grey_05 #0f0f0f;
-@define-color grey_10 #1c1c1c;
-@define-color grey_15 #242424;
-@define-color grey_20 #2d2d2d;
-@define-color grey_25 #363636;
-@define-color grey_30 #3f3f3f;
-@define-color grey_35 #4a4a4a;
-@define-color grey_40 #555555;
-@define-color grey_45 #666666;
-@define-color grey_50 #777777;
-@define-color grey_55 #888888;
-@define-color grey_60 #999999;
-@define-color grey_65 #a4a4a4;
-@define-color grey_70 #bbbbbb;
-@define-color grey_75 #c8c8c8;
-@define-color grey_80 #d6d6d6;
-@define-color grey_85 #e6e6e6;
-@define-color grey_90 #eeeeee;
-@define-color grey_95 #f4f4f4;
-@define-color grey_100 #ffffff;
+@define-color grey_05 @spectrum_gray_25;                                 /* #111111 deepest: fields, wells */
+@define-color grey_10 @spectrum_gray_50;                                 /* #1b1b1b canvas */
+@define-color grey_15 @spectrum_gray_75;                                 /* #222222 insets, filmstrip */
+@define-color grey_20 @spectrum_gray_100;                                /* #2c2c2c panels, toolbars */
+@define-color grey_25 @spectrum_gray_200;                                /* #323232 hover fill */
+@define-color grey_30 @spectrum_gray_300;                                /* #393939 hairlines */
+@define-color grey_35 @spectrum_gray_400;                                /* #444444 badge box, disabled */
+@define-color grey_40 mix(@spectrum_gray_400, @spectrum_gray_500, 0.4);  /* slider track */
+@define-color grey_45 mix(@spectrum_gray_400, @spectrum_gray_500, 0.8);
+@define-color grey_50 @spectrum_gray_500;                                /* #6d6d6d icons at rest, level C */
+@define-color grey_55 @spectrum_gray_600;                                /* #8a8a8a */
+@define-color grey_60 mix(@spectrum_gray_600, @spectrum_gray_700, 0.4);
+@define-color grey_65 mix(@spectrum_gray_600, @spectrum_gray_700, 0.7);
+@define-color grey_70 @spectrum_gray_700;                                /* #afafaf secondary text, level B */
+@define-color grey_75 mix(@spectrum_gray_700, @spectrum_gray_800, 0.5);
+@define-color grey_80 @spectrum_gray_800;                                /* #dbdbdb */
+@define-color grey_85 mix(@spectrum_gray_800, @spectrum_gray_900, 0.5);
+@define-color grey_90 mix(@spectrum_gray_800, @spectrum_gray_900, 0.8);
+@define-color grey_95 @spectrum_gray_900;                                /* #f2f2f2 primary text, level A */
+@define-color grey_100 @spectrum_gray_1000;
 
 /* three attention levels (IBIS-HIERARCHY.md): A the picture and its
    state, B this view's flow, C everything else */

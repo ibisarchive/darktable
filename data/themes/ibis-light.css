@@ -26,6 +26,11 @@
    must stay middle grey for judging images. */
 
 @import url("darktable.css");
+@import url("chunk-spectrum-light.css");
+
+/* the light ramp is deliberately warm ("ink on paper", decided 2026-09-08),
+   so it does not sit on Spectrum's neutral light greys; the Spectrum tokens
+   are imported for the accents, states and the numbers in the comments */
 
 @define-color grey_00 #ffffff;
 @define-color grey_05 #f7f6f3;
