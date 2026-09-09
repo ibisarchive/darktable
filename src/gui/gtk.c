@@ -4241,6 +4241,12 @@ void dt_gui_load_theme(const char *theme)
 
   gchar *themecss = g_strjoin(NULL, "@import url('", path_uri, "');", NULL);
 
+  /* Ibis Archive: the ibis themes are the single source of the look, so the
+     optional chunks (condensed, rounded header, accent color, module
+     borders) are not stacked on top of them */
+  const gboolean ibis_theme = g_str_has_prefix(theme, "ibis-");
+  if(!ibis_theme)
+  {
   // chunk-condensed.css
 
   if(dt_conf_get_bool("themes/condensed"))
@@ -4318,6 +4324,8 @@ void dt_gui_load_theme(const char *theme)
 #else
   _add_theme_import(&themecss, datadir, "themes", "linux.css");
 #endif
+
+  }
 
   // and finally user.css
 

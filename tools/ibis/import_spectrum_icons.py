@@ -48,7 +48,9 @@ def main() -> int:
     for name in sorted(wanted):
         src = svg_dir / f"S2_Icon_{name}_20_N.svg"
         if not src.is_file():
-            missing.append(name)
+            # our own glyphs live in the set directory already (Ibis*.svg)
+            if not (args.set / f"{name}.svg").is_file():
+                missing.append(name)
             continue
         text = src.read_text(encoding="utf-8")
         text = FILL_RE.sub('fill="#000"', text)
@@ -60,8 +62,10 @@ def main() -> int:
             shutil.copyfile(src, args.set / f"{legal}-spectrum.txt")
 
     if args.prune:
+        # drop Spectrum files the map no longer uses; our own glyphs (Ibis*.svg)
+        # and anything the package never had stay
         for svg in args.set.glob("*.svg"):
-            if svg.stem not in wanted:
+            if svg.stem not in wanted and (svg_dir / f"S2_Icon_{svg.stem}_20_N.svg").is_file():
                 svg.unlink()
 
     print(f"{len(wanted) - len(missing)} icons copied to {args.set}")

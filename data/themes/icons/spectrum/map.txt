@@ -43,8 +43,13 @@ presets = MenuHamburger
 reset = Revert
 multiinstance = Duplicate
 showmask = Mask
-# switch, switch_on, switch_off, switch_inactive, switch_deprecated:
-# Spectrum 2 has no power glyph; the cairo one stays until a choice is made
+# Spectrum 2 has no power glyph; IbisPower.svg is ours, drawn to the same
+# grid and stroke (kept by the import script's --prune)
+switch = IbisPower
+switch_on = RadioButton
+switch_off = IbisPower
+switch_inactive = IbisPower
+switch_deprecated = AlertTriangle
 
 # top and bottom bars
 preferences = Settings

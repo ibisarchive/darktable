@@ -328,3 +328,27 @@ button
    level-C dimming does not apply to them */
 #filter-colors-box { opacity: 1; }
 #header-toolbar #filter-colors-box .dt_module_btn { opacity: 0.9; }
+
+/* one icon size on every module header, lighttable, darkroom and map alike
+   (Spectrum workflow-icon-size-75); the darkroom group tabs stay the one
+   larger row at 20 px */
+#module-header .dt_module_btn
+{
+  min-width: 18px;
+  min-height: 18px;
+  padding: 0;
+  margin: 0 2px;
+}
+#module-header #button-canvas { margin: 6px; }
+#modules-tabs .dt_module_btn { min-width: 28px; min-height: 28px; }
+/* darkroom modules read like the lighttable's: flat body, hairline above the
+   header, no card; the focus is a left accent hairline, not a frame */
+#iop-expander,
+#iop-expander .dt_plugin_ui
+{
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  background-color: @bg_color;
+}
+#iop-expander.dt_module_focus #module-header { border-left: 2px solid @fg_b; padding-left: calc(0.5em - 2px); }

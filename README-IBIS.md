@@ -29,7 +29,9 @@ The core stays upstream's. Fork code lives in:
 Core files touched, deliberately and minimally (keep this list honest):
 
 - `src/gui/gtk.c`: the window title strings ("darktable" -> "Ibis Archive");
-  the themed window icon; `ui/combined_toolbar` (off by default) folds the
+  the themed window icon; the optional theme chunks (condensed, rounded
+  header, accent color, module borders) are not stacked on an `ibis-*`
+  theme, so the theme file is the single source of the look; `ui/combined_toolbar` (off by default) folds the
   filter row into the header. the title bar stays server-side: upstream
   already colors the Windows caption from the theme through DWM, and a
   client-side bar loses the resize borders
@@ -74,7 +76,9 @@ and reinstall. A glyph not in the map keeps its cairo drawing; a copy of the
 set under `<configdir>/themes/icons/spectrum/` overrides the installed one
 for experiments. Glyphs kept as cairo on purpose: stars, color labels,
 reject, the histogram scopes, the mask shapes and operators, the retouch
-tools, and the module power switch (Spectrum 2 has no power glyph).
+tools. The module power switch is `IbisPower.svg`, our own glyph drawn to
+Spectrum's grid and stroke (Spectrum 2 has none); always-on modules show
+`RadioButton`. The import script keeps `Ibis*.svg` when pruning.
 
 Windows gotcha: a function pointer taken inside a plugin DLL is an import
 thunk, so `icontheme.c` follows `jmp [rip+disp32]` before comparing.
