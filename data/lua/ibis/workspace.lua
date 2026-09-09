@@ -36,6 +36,7 @@ local LAYOUT = {
       timeline = false, script_manager = false,
       -- the header row centre is the search field, not hover hints
       hinter = false,
+      ibis_rail = true,
     },
     -- B open, C collapsed (solo mode keeps one open per side)
     expanded = {
@@ -58,7 +59,7 @@ local LAYOUT = {
     visible = {
       location = true, geotagging = true, map_settings = true, collect = true,
       map_locations = false, tagging = false, filtering = false, metadata_view = false,
-      filter = false, script_manager = false, hinter = false,
+      filter = false, script_manager = false, hinter = false, ibis_rail = true,
     },
     expanded = { location = true, geotagging = false, map_settings = false, collect = false },
   },

@@ -15,7 +15,7 @@ editing, export presets — is darktable, unchanged.
 
 The core stays upstream's. Fork code lives in:
 
-- `src/libs/ibis_*.c`      lighttable modules (identify birds)
+- `src/libs/ibis_*.c`      lighttable modules (identify birds, the right-edge rail)
 - `data/lua/ibis/`         bundled Lua (`data/luarc` requires it, guarded)
 - `data/themes/ibis-*.css` the two Ibis themes (dark, light) and `chunk-ibis-fonts.css`
 - `data/themes/icons/`    SVG icon sets; `spectrum/` = Adobe Spectrum 2 Workflow
@@ -54,7 +54,15 @@ Core files touched, deliberately and minimally (keep this list honest):
 - `src/dtgtk/thumbnail.c`, `thumbnail.h`: the format badge sits top-right of
   the cell and a file-name label (`thumb-name`) top-left, as in Lightroom's
   grid; the label mirrors the badge's size and show/hide logic
-- `src/libs/modulegroups.c`: the `workflow: birds` module-group preset
+- `src/libs/modulegroups.c`: the `workflow: birds` module-group preset; with
+  `ui/panel_rail` on, the group tabs stand vertically in the rail
+- `src/gui/gtk.h`, `gtk.c`: the `DT_UI_CONTAINER_PANEL_RIGHT_RAIL` container,
+  a 48 px column at the right edge of the right panel that follows the
+  panel's visibility (`ui/panel_rail`); `src/libs/ibis_rail.c` fills it in
+  the lighttable and the map with one button per right-panel module
+- bottom bar like Lightroom's: `src/libs/tools/module_toolbox.c` (layout,
+  zoom) to the left, `ratings.c` and `colorlabels.c` to the centre (made
+  horizontal in `gtk.c`), `view_toolbox.c` to the right
 - `src/common/ai_models.c`: one line, the label for the `classify` task
 - `cmake/modules/FindONNXRuntime.cmake`: architecture fallback for MSYS2 (upstream-worthy)
 - `data/darktableconfig.xml.in`: Ibis conf keys, the default theme, and the

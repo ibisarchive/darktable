@@ -426,6 +426,19 @@ gboolean dtgtk_icon_theme_paint(DTGTKCairoPaintIconFunc paint,
   else svg = e->svg[ICON_BASE];
   if(!svg) return FALSE;
 
+  return dtgtk_icon_theme_paint_svg(svg, cr, x, y, w, h);
+}
+
+gboolean dtgtk_icon_theme_paint_svg(const char *svg,
+                                    cairo_t *cr,
+                                    const gint x,
+                                    const gint y,
+                                    const gint w,
+                                    const gint h)
+{
+  if(!_theme.tried) _init();
+  if(!_theme.surfaces || !svg || !*svg) return FALSE;
+
   const int px = MAX(1, (int)lround(MIN(w, h) * _theme.scale));
   cairo_surface_t *surface = _get_surface(svg, px);
   if(!surface) return FALSE;

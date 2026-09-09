@@ -71,7 +71,8 @@ dt_view_type_flags_t views(dt_lib_module_t *self)
 
 uint32_t container(dt_lib_module_t *self)
 {
-  return DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER;
+  /* Ibis Archive: layout and zoom at the left end of the bottom bar, as in Lightroom */
+  return DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT;
 }
 
 gboolean expandable(dt_lib_module_t *self)

@@ -352,3 +352,33 @@ button
   background-color: @bg_color;
 }
 #iop-expander.dt_module_focus #module-header { border-left: 2px solid @fg_b; padding-left: calc(0.5em - 2px); }
+
+/* the rail at the right edge (ui/panel_rail): 48 px, hairline on its left,
+   32 px buttons on Spectrum's 8 px rhythm; the checked one is the open
+   module, filled one step above the panel */
+#panel-rail
+{
+  min-width: 48px;
+  padding: 8px 0;
+  background-color: @bg_color;
+  border-left: 1px solid @border_color;
+}
+#panel-rail .dt_module_btn,
+#panel-rail button
+{
+  min-width: 32px;
+  min-height: 32px;
+  margin: 2px 8px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background-color: transparent;
+  background-image: none;
+  box-shadow: none;
+  color: @fg_c;
+  opacity: 1;
+}
+#panel-rail button:hover { color: @fg_a; background-color: @grey_25; }
+#panel-rail button:checked { color: @fg_a; background-color: @grey_30; }
+#panel-rail #modules-tabs { padding: 0; }
+#panel-rail #modules-tabs .dt_module_btn { margin: 2px 8px; }

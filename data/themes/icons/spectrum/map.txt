@@ -150,3 +150,21 @@ modulegroup_technical = PluginGear
 # star, unratestar, reject, label*, alignment, text_label (they carry
 # color or text), the histogram scopes, the mask shapes and set operators,
 # the retouch tools, empty
+
+# SVGs the rail (src/libs/ibis_rail.c) asks for by name, one per module
+@svg Binoculars
+@svg SelectMulti
+@svg Edit
+@svg Tag
+@svg Location
+@svg Export
+@svg Search
+@svg Settings
+@svg Folder
+@svg Effects
+@svg Image
+@svg Copy
+@svg History
+@svg InfoCircle
+@svg Print
+@svg Properties

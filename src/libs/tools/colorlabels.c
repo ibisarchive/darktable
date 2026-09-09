@@ -73,7 +73,8 @@ dt_view_type_flags_t views(dt_lib_module_t *self)
 
 uint32_t container(dt_lib_module_t *self)
 {
-  return DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT;
+  /* Ibis Archive: rating and colour labels in the middle of the bottom bar */
+  return DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER;
 }
 
 gboolean expandable(dt_lib_module_t *self)

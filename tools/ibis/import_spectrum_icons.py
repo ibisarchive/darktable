@@ -39,6 +39,10 @@ def main() -> int:
     wanted = set()
     for line in (args.set / "map.txt").read_text(encoding="utf-8").splitlines():
         line = line.strip()
+        if line.startswith("@svg "):
+            # an SVG the app asks for by name (the rail), not tied to a glyph
+            wanted.add(line[5:].strip())
+            continue
         if not line or line.startswith("#") or line.startswith("@"):
             continue
         if "=" in line:

@@ -3294,6 +3294,23 @@ void gui_init(dt_lib_module_t *self)
   // check for autoapplypresets on image change
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_IMAGE_CHANGED, _dt_dev_image_changed_callback);
   DT_CONTROL_SIGNAL_HANDLE(DT_SIGNAL_DEVELOP_INITIALIZE, _dt_dev_image_changed_callback);
+  /* Ibis Archive: with the rail on, the group tabs stand vertically at the
+     right edge and follow this module's visibility (darkroom only) */
+  GtkWidget *rail = GTK_WIDGET(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_RAIL));
+  if(rail && dt_conf_get_bool("ui/panel_rail"))
+  {
+    gtk_orientable_set_orientation(GTK_ORIENTABLE(d->hbox_buttons), GTK_ORIENTATION_VERTICAL);
+    gtk_orientable_set_orientation(GTK_ORIENTABLE(d->hbox_groups), GTK_ORIENTATION_VERTICAL);
+    gtk_widget_set_name(d->hbox_buttons, "modules-tabs");
+    dt_gui_add_class(d->hbox_buttons, "dt_big_btn_canvas");
+    g_object_ref(d->hbox_buttons);
+    gtk_container_remove(GTK_CONTAINER(gtk_widget_get_parent(d->hbox_buttons)), d->hbox_buttons);
+    dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_RAIL, d->hbox_buttons);
+    g_object_unref(d->hbox_buttons);
+    gtk_widget_show_all(d->hbox_buttons);
+    gtk_widget_hide(d->hbox_buttons); // shown by view_enter(darkroom)
+  }
+
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -4434,6 +4451,9 @@ void view_leave(dt_lib_module_t *self,
   if(!strcmp(old_view->module_name, "darkroom"))
   {
     _basics_hide(self);
+    // Ibis Archive: the tabs in the rail belong to the darkroom only
+    dt_lib_modulegroups_t *d = self->data;
+    if(gtk_widget_get_parent(d->hbox_buttons) != self->widget) gtk_widget_hide(d->hbox_buttons);
   }
 }
 
@@ -4444,6 +4464,8 @@ void view_enter(dt_lib_module_t *self,
   if(!strcmp(new_view->module_name, "darkroom"))
   {
     dt_lib_modulegroups_t *d = self->data;
+    // Ibis Archive: the tabs in the rail come back with the darkroom
+    if(gtk_widget_get_parent(d->hbox_buttons) != self->widget) gtk_widget_show(d->hbox_buttons);
 
     // and we initialize the buttons too
     char *preset = dt_conf_get_string("plugins/darkroom/modulegroups_preset");

@@ -46,7 +46,8 @@ dt_view_type_flags_t views(dt_lib_module_t *self)
 
 uint32_t container(dt_lib_module_t *self)
 {
-  return DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_LEFT;
+  /* Ibis Archive: rating and colour labels in the middle of the bottom bar */
+  return DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER;
 }
 
 gboolean expandable(dt_lib_module_t *self)
@@ -56,7 +57,7 @@ gboolean expandable(dt_lib_module_t *self)
 
 int position(const dt_lib_module_t *self)
 {
-  return 1002;
+  return 1002; // stars before the colour labels (1001)
 }
 
 void gui_init(dt_lib_module_t *self)

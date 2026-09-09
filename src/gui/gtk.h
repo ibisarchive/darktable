@@ -369,6 +369,8 @@ typedef enum dt_ui_container_t
   /* this panel is placed at bottom of ui
      only used by the filmstrip if shown */
   DT_UI_CONTAINER_PANEL_BOTTOM = 15,
+  /* Ibis Archive: the icon rail at the right edge of the right panel */
+  DT_UI_CONTAINER_PANEL_RIGHT_RAIL = 16,
 
   /* Count of containers */
   DT_UI_CONTAINER_SIZE

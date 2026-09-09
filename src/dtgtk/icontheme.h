@@ -52,6 +52,15 @@ gboolean dtgtk_icon_theme_paint(DTGTKCairoPaintIconFunc paint,
                                 const gint h,
                                 const gint flags);
 
+/* paint one SVG of the active set by file name (without .svg), centered in
+   the box, as a mask with the caller's source; FALSE when no set is active */
+gboolean dtgtk_icon_theme_paint_svg(const char *svg,
+                                    cairo_t *cr,
+                                    const gint x,
+                                    const gint y,
+                                    const gint w,
+                                    const gint h);
+
 /* drop the loaded map and the rendered surfaces */
 void dtgtk_icon_theme_cleanup(void);
 

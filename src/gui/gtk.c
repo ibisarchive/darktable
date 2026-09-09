@@ -3509,6 +3509,12 @@ static void _ui_init_panel_left(dt_ui_t *ui,
   gtk_widget_show_all(ui->panels[DT_UI_PANEL_LEFT]);
 }
 
+static void _rail_follow_panel(GObject *panel, GParamSpec *pspec, GtkWidget *rail)
+{
+  gtk_widget_set_visible(rail, gtk_widget_get_visible(GTK_WIDGET(panel))
+                                 && dt_conf_get_bool("ui/panel_rail"));
+}
+
 static void _ui_init_panel_right(dt_ui_t *ui,
                                  GtkWidget *container)
 {
@@ -3519,8 +3525,23 @@ static void _ui_init_panel_right(dt_ui_t *ui,
   widget = ui->panels[DT_UI_PANEL_RIGHT] = dtgtk_side_panel_new();
   gtk_widget_set_name(widget, "right");
 
+  /* Ibis Archive: an icon rail at the right edge of the panel, like the tool
+     rail in Lightroom (ui/panel_rail). the rail follows the panel's
+     visibility, so the edge arrow hides both */
+  GtkWidget *row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start(GTK_BOX(row), widget, TRUE, TRUE, 0);
+  GtkWidget *rail = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_widget_set_name(rail, "panel-rail");
+  gtk_box_pack_end(GTK_BOX(row), rail, FALSE, FALSE, 0);
+  ui->containers[DT_UI_CONTAINER_PANEL_RIGHT_RAIL] = rail;
+  const gboolean rail_on = dt_conf_get_bool("ui/panel_rail");
+  gtk_widget_set_no_show_all(rail, !rail_on);
+  g_signal_connect(widget, "notify::visible", G_CALLBACK(_rail_follow_panel), rail);
+  gtk_widget_show(row);
+  if(rail_on) gtk_widget_show(rail);
+
   GtkWidget *over = gtk_overlay_new();
-  gtk_container_add(GTK_CONTAINER(over), widget);
+  gtk_container_add(GTK_CONTAINER(over), row);
   // we add a transparent overlay over the modules margins to resize the panel
   GtkWidget *handle = gtk_drawing_area_new();
   gtk_widget_set_halign(handle, GTK_ALIGN_START);
@@ -3689,9 +3710,10 @@ static void _ui_init_panel_center_bottom(dt_ui_t *ui,
                      TRUE, TRUE,
                      DT_UI_PANEL_MODULE_SPACING);
 
-  /* adding the center box */
+  /* adding the center box; Ibis Archive: horizontal, it holds the rating
+     and the colour labels side by side */
   ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER] =
-    gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(widget),
                      ui->containers[DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER],
                      FALSE, TRUE,
